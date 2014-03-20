@@ -15,7 +15,7 @@
  * UART1TX = F8
  */
 static const int LED_PIN = 65; //LED2 red
-static const int TIME_STEP = 1000; //Time step in milliseconds
+static const int TIME_STEP = 500; //Time step in milliseconds
 static const int NUM_SERVOS = 4; //Servos numbered 0-31
 
 String servoIDs[NUM_SERVOS];
@@ -66,14 +66,13 @@ void loop()
     sscFinalCommand += "T" + String(TIME_STEP);
 
     digitalWrite(LED_PIN, LOW);
-    delay(TIME_STEP);
 
     for (int i = 0; i < NUM_SERVOS; i++) {
         Serial.println(sscCommands[i] + " T" + String(TIME_STEP));
         Serial0.println(sscCommands[i] + " T" + String(TIME_STEP));
-        //Serial.println(sscFinalCommand);
-        //Serial0.println(sscFinalCommand);
-        //sscFinalCommand = "";
+        Serial.println(sscFinalCommand);
+        Serial0.println(sscFinalCommand);
+        sscFinalCommand = "";
     }
 
     digitalWrite(LED_PIN, HIGH);  
