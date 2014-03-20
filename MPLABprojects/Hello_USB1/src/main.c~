@@ -1,0 +1,237 @@
+#include "p32xxxx.h"
+#include "HardwareProfile.h"
+#include "compiler.h"
+#include "plib.h"
+#include "usb_config.h"
+#include "USB/usb.h"
+#include "USB/usb_function_cdc.h"
+
+#pragma config POSCMOD  = HS			//Primary Oscillator
+#pragma config FNOSC    = PRIPLL		//Oscillator Selection 
+#pragma config IESO     = OFF			//Internal/External Switch-over 
+
+#pragma config UPLLEN   = ON			//USB PLL Enabled 
+#pragma config UPLLIDIV = DIV_2			//USB PLL Input Divider
+
+#pragma config FPLLIDIV = DIV_2			//PLL Input Divider
+#pragma config FPLLMUL  = MUL_20		//PLL Multiplier 
+#pragma config FPLLODIV = DIV_1			//PLL Output Divider
+
+#pragma config FPBDIV	= DIV_1			//Peripheral bus clock - divide by 8
+
+#pragma config FWDTEN	= OFF			//Watchdog Timer
+#pragma config CP		= OFF			//Code Protect
+#pragma config BWP		= OFF			//Boot Flash Write Protect
+#pragma config PWP		= OFF			//Program Flash Write Protect
+
+char USB_In_Buffer[64];
+char USB_Out_Buffer[64];
+BOOL stringPrinted;
+
+//Function prototypes:
+void DelayMs(UINT32 delay);
+static void InitializeSystem();
+void ProcessIO();
+void USBDeviceTasks();
+void YourHighPriorityISRCode();
+void YourLowPriorityISRCode();
+void BlinkUSBStatus();
+void UserInit();
+
+int main() {   
+	InitializeSystem();
+
+	#if defined(USB_INTERRUPT)
+		USBDeviceAttach();
+	#endif
+
+	while(1) {
+		#if defined(USB_POLLING)
+			USBDeviceTasks(); 
+		#endif
+		ProcessIO();
+	}
+}
+
+static void InitializeSystem() {
+	SYSTEMConfigPerformance(SYS_FREQ);
+
+	AD1PCFG = 0xFFFF;
+	mJTAGPortEnable(0);
+
+	#if defined(USE_USB_BUS_SENSE_IO)
+		tris_usb_bus_sense = INPUT_PIN; 
+	#endif
+    
+
+	#if defined(USE_SELF_POWER_SENSE_IO)
+		tris_self_power = INPUT_PIN;    // See HardwareProfile.h
+	#endif
+    
+	UserInit();
+
+	USBDeviceInit();    
+}
+
+
+void UserInit() {
+	stringPrinted = TRUE;
+  
+	mInitAllLEDs();
+	mInitAllSwitches();
+}
+
+
+void ProcessIO() {   
+	BYTE numBytesRead;
+
+	BlinkUSBStatus();
+
+	if((USBDeviceState < CONFIGURED_STATE)||(USBSuspendControl==1))
+		return;
+
+	if(msg_switch == 0) {
+		if(stringPrinted == FALSE) {
+			if(mUSBUSARTIsTxTrfReady()) {
+
+				putrsUSBUSART("Button Pressed -- \r\n");
+				stringPrinted = TRUE;
+			}
+		}
+	} else {
+		stringPrinted = FALSE;
+	}
+
+    // If character received, add 1 and echo it
+	if(mUSBUSARTIsTxTrfReady()) {
+		numBytesRead = getsUSBUSART(USB_In_Buffer, 64);
+		if(numBytesRead != 0) {
+			BYTE i;
+
+			for(i = 0; i < numBytesRead; i++) {
+				switch(USB_Out_Buffer[i]) {
+					case 0x0A:
+					case 0x0D:
+						USB_Out_Buffer[i] = USB_Out_Buffer[i];
+						break;
+					default:
+						USB_Out_Buffer[i] = USB_Out_Buffer[i] + 1;
+						break;
+				}
+
+			}
+			putUSBUSART(USB_Out_Buffer, numBytesRead);
+		}
+	}
+	CDCTxService();
+}
+
+
+void BlinkUSBStatus() {
+	static WORD led_count=0;
+    
+    // Restart the countdown when it hits zero.
+	if(led_count == 0)
+		led_count = 50000;
+	
+	led_count--;
+
+    // If Suspended, toggle LEDs 1 & 2
+	if(USBSuspendControl == 1) {
+		if(led_count==0) {
+			mLED_1_Toggle();
+			mLED_2_Toggle();
+		}
+	} else {	//Handle non-suspended states
+
+		if(USBDeviceState == DETACHED_STATE) {
+			mLED_Both_Off();
+		} else if(USBDeviceState == ATTACHED_STATE) {
+			mLED_Both_On();
+		} else if(USBDeviceState == POWERED_STATE) {
+			mLED_Only_1_On();
+		} else if(USBDeviceState == DEFAULT_STATE) {
+			mLED_Only_2_On();
+		} else if(USBDeviceState == ADDRESS_STATE) {
+			if(led_count == 0) {
+				mLED_1_Toggle();
+				mLED_2_Off();
+			}
+		} else if(USBDeviceState == CONFIGURED_STATE) {
+			if(led_count==0) {
+				mLED_1_Toggle();
+				if(mGetLED_1()) {
+					mLED_2_Off();
+				} else {
+					mLED_2_On();
+				}
+			}
+		}
+	}
+}
+
+void USBCBSuspend() {}
+
+void USBCBWakeFromSuspend() {}
+
+void USBCB_SOF_Handler() {}
+
+void USBCBErrorHandler() {}
+
+void USBCBCheckOtherReq() {
+	USBCheckCDCRequest();
+}
+
+void USBCBStdSetDscHandler() {}
+
+void USBCBInitEP() {
+	CDCInitEP();
+}
+
+void USBCBSendResume() {
+	static WORD delay_count;
+    
+	USBResumeControl = 1;       // Start RESUME signaling
+    
+	delay_count = 1800U;        // Set RESUME line for 1-13 ms
+	do {
+		delay_count--;
+	} while(delay_count);
+	USBResumeControl = 0;
+}
+
+#if defined(ENABLE_EP0_DATA_RECEIVED_CALLBACK)
+void USBCBEP0DataReceived() {}
+#endif
+
+BOOL USER_USB_CALLBACK_EVENT_HANDLER(USB_EVENT event, void *pdata, WORD size) {
+	switch(event) {
+		case EVENT_CONFIGURED: 
+			USBCBInitEP();
+			break;
+		case EVENT_SET_DESCRIPTOR:
+			USBCBStdSetDscHandler();
+			break;
+		case EVENT_EP0_REQUEST:
+			USBCBCheckOtherReq();
+			break;
+		case EVENT_SOF:
+			USBCB_SOF_Handler();
+			break;
+		case EVENT_SUSPEND:
+			USBCBSuspend();
+			break;
+		case EVENT_RESUME:
+			USBCBWakeFromSuspend();
+			break;
+		case EVENT_BUS_ERROR:
+			USBCBErrorHandler();
+			break;
+		case EVENT_TRANSFER:
+			Nop();
+			break;
+		default:
+			break;
+	}
+	return TRUE; 
+}

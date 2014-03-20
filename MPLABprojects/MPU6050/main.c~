@@ -1,0 +1,243 @@
+/********************************************************************
+ FileName:     main.c
+ Dependencies: See INCLUDES section
+ Processor:		PIC18 or PIC24 USB Microcontrollers
+ Hardware:		The code is natively intended to be used on the following
+ 				hardware platforms: PICDEM™ FS USB Demo Board, 
+ 				PIC18F87J50 FS USB Plug-In Module, or
+ 				Explorer 16 + PIC24 USB PIM.  The firmware may be
+ 				modified for use on other USB platforms by editing the
+ 				HardwareProfile.h file.
+ Complier:  	Microchip C18 (for PIC18) or C30 (for PIC24)
+ Company:		Microchip Technology, Inc.
+
+ Software License Agreement:
+
+ The software supplied herewith by Microchip Technology Incorporated
+ (the “Company”) for its PIC® Microcontroller is intended and
+ supplied to you, the Company’s customer, for use solely and
+ exclusively on Microchip PIC Microcontroller products. The
+ software is owned by the Company and/or its supplier, and is
+ protected under applicable copyright laws. All rights are reserved.
+ Any use in violation of the foregoing restrictions may subject the
+ user to criminal sanctions under applicable laws, as well as to
+ civil liability for the breach of the terms and conditions of this
+ license.
+
+ THIS SOFTWARE IS PROVIDED IN AN “AS IS” CONDITION. NO WARRANTIES,
+ WHETHER EXPRESS, IMPLIED OR STATUTORY, INCLUDING, BUT NOT LIMITED
+ TO, IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ PARTICULAR PURPOSE APPLY TO THIS SOFTWARE. THE COMPANY SHALL NOT,
+ IN ANY CIRCUMSTANCES, BE LIABLE FOR SPECIAL, INCIDENTAL OR
+ CONSEQUENTIAL DAMAGES, FOR ANY REASON WHATSOEVER.
+
+********************************************************************
+ File Description:
+
+ Change History:
+  Rev   Date         Description
+  1.0   11/19/2004   Initial release
+  2.1   02/26/2007   Updated for simplicity and to use common
+                     coding style
+********************************************************************/
+
+/** INCLUDES *******************************************************/
+#include "GenericTypeDefs.h"
+#include "Compiler.h"
+#include "usb_config.h"
+//#include "./USB/usb_device.h"
+#include "./USB/usb.h"
+#include "./USB/usb_function_cdc.h"
+
+#include "HardwareProfile.h"
+#include "USBProcess.h"
+#include "MPU6050.h"
+#include "i2c_functions.h"
+#include "shared.h"
+
+/** V A R I A B L E S ********************************************************/
+#pragma udata
+char USB_In_Buffer[64];
+char USB_Out_Buffer[64];
+
+BOOL stringPrinted;
+
+/** P R I V A T E  P R O T O T Y P E S ***************************************/
+static void InitializeSystem(void);
+void USBDeviceTasks(void);
+void YourHighPriorityISRCode();
+void YourLowPriorityISRCode();
+void BlinkUSBStatus(void);
+
+/** DECLARATIONS ***************************************************/
+#pragma code
+
+int main(void)
+{   
+    InitializeSystem();
+
+    while(1)
+    {
+		// Check bus status and service USB interrupts.
+        USBDeviceTasks(); // Interrupt or polling method.  If using polling, must call
+        				  // this function periodically.  This function will take care
+        				  // of processing and responding to SETUP transactions 
+        				  // (such as during the enumeration process when you first
+        				  // plug in).  USB hosts require that USB devices should accept
+        				  // and process SETUP packets in a timely fashion.  Therefore,
+        				  // when using polling, this function should be called 
+        				  // frequently (such as once about every 100 microseconds) at any
+        				  // time that a SETUP packet might reasonably be expected to
+        				  // be sent by the host to your device.  In most cases, the
+        				  // USBDeviceTasks() function does not take very long to
+        				  // execute (~50 instruction cycles) before it returns.
+    				  
+
+		// Application-specific tasks.
+		// Application related code may be added here, or in the ProcessIO() function.
+        Get_Accel_Angles();
+
+        int accel_angle = 10; //Where is the angle stored?
+
+        ProcessIO(accel_angle); //USB function to print stuff to putty Terminal        
+    }//end while
+}//end main
+
+static void InitializeSystem(void)
+{
+    SYSTEMConfigPerformance(SYSCLK);
+
+    AD1PCFG = 0xFFFF;
+
+    #if defined(USE_USB_BUS_SENSE_IO)
+    tris_usb_bus_sense = INPUT_PIN; // See HardwareProfile.h
+    #endif
+    
+    #if defined(USE_SELF_POWER_SENSE_IO)
+    tris_self_power = INPUT_PIN;	// See HardwareProfile.h
+    #endif
+    
+    // Peripheral function that configures for best performance given the system's
+    // clock frequency--this is for general practice.
+    // This part is analogous to the void setup(){}; in Arduino.
+    TRISDCLR = 0x0100; 	// Set pin RD8 as an output, could be written as TRISD = 0xFEFF;
+				// but takes more clock cycles to perform.
+    TRISESET = 0x0080;	// Set pin RE7 (PROG button) as an input, could be written as TRISE = 0x0080;
+				// but takes more clock cycles to perform.
+	
+    // This part is analogous to the void loop(){}; in Arduino.
+    SDA = SCL = 1;
+    SCL_IN = SDA_IN = 0;
+    Setup_MPU6050();
+    Calibrate_Gyros();
+
+    UserInit();
+
+    USBDeviceInit();	//usb_device.c.  Initializes USB module SFRs and firmware
+    					//variables to known states.
+
+    // Configure the proper PB frequency and the number of wait states
+    SYSTEMConfigWaitStatesAndPB(80000000L);
+
+    // Enable the cache for the best performance
+    CheKseg0CacheOn();	
+
+    mJTAGPortEnable(0);
+    PMCONbits.ON = 0;
+
+}//end InitializeSystem
+
+void BlinkUSBStatus(void)
+{
+    static WORD led_count = 0;
+    
+    if(led_count == 0)
+	{
+		led_count = 50000U;
+	}
+    led_count--;
+
+    if(USBDeviceState == CONFIGURED_STATE)
+    {
+        if(led_count == 0)
+        {
+            mLED_USB_Toggle();
+        }
+    }
+}//end BlinkUSBStatus
+
+void USBCBSuspend(void){}
+
+void USBCBWakeFromSuspend(void){}
+
+void USBCB_SOF_Handler(void){}
+
+void USBCBErrorHandler(void){}
+
+void USBCBCheckOtherReq(void)
+{
+    USBCheckCDCRequest();
+}//end
+
+void USBCBStdSetDscHandler(void){}//end
+
+void USBCBInitEP(void)
+{
+    CDCInitEP();
+}
+
+void USBCBSendResume(void)
+{
+    static WORD delay_count;
+    
+    USBResumeControl = 1;                // Start RESUME signaling
+    
+    delay_count = 1800U;                // Set RESUME line for 1-13 ms
+    do
+    {
+        delay_count--;
+    }while(delay_count);
+    USBResumeControl = 0;
+}
+
+#if defined(ENABLE_EP0_DATA_RECEIVED_CALLBACK)
+void USBCBEP0DataReceived(void){}
+#endif
+
+BOOL USER_USB_CALLBACK_EVENT_HANDLER(USB_EVENT event, void *pdata, WORD size)
+{
+    switch(event)
+    {
+        case EVENT_CONFIGURED: 
+            USBCBInitEP();
+            break;
+        case EVENT_SET_DESCRIPTOR:
+            USBCBStdSetDscHandler();
+            break;
+        case EVENT_EP0_REQUEST:
+            USBCBCheckOtherReq();
+            break;
+        case EVENT_SOF:
+            USBCB_SOF_Handler();
+            break;
+        case EVENT_SUSPEND:
+            USBCBSuspend();
+            break;
+        case EVENT_RESUME:
+            USBCBWakeFromSuspend();
+            break;
+        case EVENT_BUS_ERROR:
+            USBCBErrorHandler();
+            break;
+        case EVENT_TRANSFER:
+            Nop();
+            break;
+        default:
+            break;
+    }      
+    return TRUE; 
+}
+
+
+/** EOF main.c *************************************************/
+
