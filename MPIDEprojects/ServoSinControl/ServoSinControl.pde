@@ -1,5 +1,6 @@
 /*=============================================================================
  * Controls servos using the SSC32 Servo controller
+ *
  * # <ch>P <pw>S <spd> ...# <ch>P <pw>S <spd>T <time> <cr>
  * <ch> = Channel number in decimal,0- 31.
  * <pw> = Pulse width in microseconds, 500- 2500.
@@ -15,7 +16,7 @@
  * UART1TX = F8
  */
 static const int LED_PIN = 65; //LED2 red
-static const int TIME_STEP = 500; //Time step in milliseconds
+static const int TIME_STEP = 1000; //Time step in milliseconds
 static const int NUM_SERVOS = 4; //Servos numbered 0-31
 
 String servoIDs[NUM_SERVOS];
@@ -44,11 +45,11 @@ void setup()
     pinMode(LED_PIN, OUTPUT); 
     digitalWrite(LED_PIN, HIGH); //High is off
 
-    //Initialize Servo values;
-    servoIDs[0] = 0;
-    servoIDs[1] = 4;
-    servoIDs[2] = 8;
-    servoIDs[3] = 12;
+    //Initialize Servo pins;
+    servoIDs[0] = 0; //Hip in/out
+    servoIDs[1] = 3; //Hip forward back
+    servoIDs[2] = 4; //Knee
+    servoIDs[3] = 7; //Ankle forward back
 }
 
 void loop()
@@ -67,42 +68,69 @@ void loop()
 
     digitalWrite(LED_PIN, LOW);
 
-    for (int i = 0; i < NUM_SERVOS; i++) {
-        Serial.println(sscCommands[i] + " T" + String(TIME_STEP));
-        Serial0.println(sscCommands[i] + " T" + String(TIME_STEP));
-        Serial.println(sscFinalCommand);
-        Serial0.println(sscFinalCommand);
-        sscFinalCommand = "";
-    }
+    Serial.println(sscFinalCommand);
+    Serial0.println(sscFinalCommand);
+    sscFinalCommand = "";
 
     digitalWrite(LED_PIN, HIGH);  
 
-    delay(TIME_STEP);
+    delay(TIME_STEP+100);
     counter++;
 }
 
 String calcServoOutput(int servo, int time) {
     switch (servo) {
         case 0:
-            return sineFunctionA(time);
+            return "1400";
             break;
         case 1:
-            return sineFunctionA(time);
+            return "1500";
             break;
         case 2:
-            return sineFunctionA(time);
+            return sineKnee(time);
             break;
         case 3:
-            return sineFunctionA(time);
+            return "1600";
             break;
         default:
-            return 0;
+            return "1600";
             break;
     }
 }
 
-String sineFunctionA(int time) {
-    double sinVal = sin(0.6*time);
-    int sscVal = (1+sinVal)*500 + 1000;
+/* Sine function for knee joint
+ * Output values:
+ * 2500 is fully straightened
+ * 1250 is fully curled
+ */
+String sineKnee(int time) {
+    // calulate output
+    int period = 20; //number of time steps for full cycle
+    double coef = 2*3.14/period;
+    double sinVal = sin(coef*time); //
+    
+    // convert to int
+    int range = 2500 - 1250;
+    int minimum = 1250;
+    int sscVal = (1+sinVal)*range/2 + minimum;
+
+    return String(sscVal);
+}
+
+/* Sine function for hip foward/back
+ * Output Values:
+ * 1250 full back
+ * 1500 full straight
+ * 2500 full foward
+ */
+String sineHipForwardBack(int time) {
+    int period = 20; //number of time steps for full cycle
+    double coef = 2*3.14/period;
+    double sinVal = sin(coef*time);
+
+    int range = 2500 - 1250;
+    int minimum = 1250;
+    int sscVal = (1+sinVal)*range/2 + minimum;
+
     return String(sscVal);
 }

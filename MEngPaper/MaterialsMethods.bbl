@@ -1,0 +1,20 @@
+\begin{thebibliography}{1}
+
+\bibitem{SVMStackOverflow}
+Peter~O. (http://stackoverflow.com/users/815724/peter o).
+\newblock What are advantages of artificial neural networks over support vector
+  machines?
+\newblock Stack Overflow.
+\newblock URL:http://stackoverflow.com/q/11632516 (version: 2014-03-03).
+
+\bibitem{Melchiorri2013}
+C.~Melchiorri, G.~Palli, G.~Berselli, and G.~Vassura.
+\newblock Development of the ub hand iv: Overview of design solutions and
+  enabling technologies.
+\newblock {\em IEEE Robot Autom Mag}, 20(3):72--81, 2013.
+
+\bibitem{pic32datasheet}
+Microchip.
+\newblock {\em PIC32MX5XX/6XX/7XX Datasheet}, 11 2012.
+
+\end{thebibliography}

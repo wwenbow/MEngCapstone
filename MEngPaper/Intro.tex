@@ -1,0 +1,87 @@
+%        File: Intro.tex
+%     Created: Sun Mar 02 03:00 PM 2014 P
+% Last Change: Sun Mar 02 03:00 PM 2014 P
+%
+\documentclass{article}
+\usepackage{fullpage}
+\usepackage{hyperref}
+\usepackage{url}
+
+\begin{document}
+
+\section{Introduction}
+\subsection{Current Technology}
+\paragraph{}
+Currently many manufacturing robots do not utilize computer vision to
+accomplish their tasks. Many manufacturing robots simply run a simple preset
+routine without much intellect driving them. As computational power becomes
+cheaper and computer vision algorithms become more mature, these new
+technologies can offer much needed improvements to manufacturing robotics. High
+tech areas, such as computer vision, can be very profitable targets for our
+sponsor, Bay Area IP, LLC. Our sponsor seeks to generate intellectual property
+to license out to companies in the robotics field, so it will be profitable to
+focus on the high tech areas. 
+
+\paragraph{} There exist some manufacturing robots on the market that are
+utilizing computer vision to accomplish complex production line tasks. One such
+robot is produced by Italy based SIR SpA. The robot utilizes stereoscopic 3D
+vision systems to find and pick up parts from an unstructured bin. However,
+this system utilizes a large camera and complex algorithms to find and detect
+individual parts in a disorganized bin full of such parts\cite{SIRfuture}. Our
+Capstone technology seeks to provide a simpler computer vision solution for
+less complex object detection problems.
+
+\paragraph{} Computer vision technology has many tools for object detection and
+recognition.  There are many machine learning paradigms that can be applied to
+the task of object detection. Neural Networks and Support Vector Machines(SVM)
+are two technologies that are commonly used in this area. Neural Networks are
+very complex to tweak and configure, but can achieve great accuracy while being
+light weight at run time. SVM is a well understood mathematically and
+configuration of such systems is also well understood. They are light weight if
+used with simple linear kernels, but more complex kernels would be difficult to
+implement on a robot\cite{SVMStackOverflow}. However, all these technologies
+can be difficult to implement on an embedded system such as a robot, so we will
+attempt to do develop new techniques that will be lighter on computational
+power.
+
+\paragraph{} The other component of our robot is the robotic hand. There are
+many different companies and research groups constructing robotic hands for
+many different applications. There are hands designed to be prosthetics, as
+well as hands designed to be integrated into robotic systems. One of the most
+complex is the UB Hand IV, this hand is nearly the same as a human hand in
+terms of capabilities. However, the hand is very heavy and very power hungry,
+so it is not very suitable for most applications\cite{Melchiorri2013}. We want
+to leverage some modern technology to make a robotic hand that is smaller and
+light weight.
+
+\subsection{Capstone Technology} \paragraph{} We will be attempting to produce
+a cheap and simple computer vision technology for object detection. Accomplish
+this, we will be utilizing lasers to make the image processing challenges
+simpler. Processing live video using common machine learning based computer
+vision algorithms may prove to be challenging for the smaller computers we will
+be utilizing for the robot. To help make the task simpler, we will utilize a
+laser on the head to scan the space. By using the laser to scan the image, and
+utilizing the live video of the laser motion, we can easily detect edges
+without using complex algorithms. Using these edges we can find objects. We
+will also have another laser on the arm. Once we have an object detected, we
+can use the laser on the head to point at the object, and try to line up the
+arm using it's own laser. By using the two lasers we can try to guide the arm
+towards the object.
+
+\paragraph{} To make the robotic hand, we will be trying to use small
+components as much as possible to reduce the size and weight. By using smaller
+motors, we can make the hand small and still have many degrees of freedom. We
+cannot make the hand as complex as a human hand, so we will need to sacrifice
+some capabilities to make the hand small and low power. A major technology that
+we plan to implement is Shape Memory Alloy(SMA). SMA is a new material that can
+contract when heated this allows us to use it as an actuator. We can utilize
+wires of SMA to control joints and other areas of the hand where space is very
+limited. Combining these various technologies, we can make a hand that is very
+human-like.
+
+\bibliographystyle{plain}
+\bibliography{/home/wenbo/Dropbox/UCB/295/CapstoneCitations}
+
+\end{document}
+
+
