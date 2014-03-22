@@ -2,11 +2,12 @@
 %     Created: Sun Mar 02 03:00 PM 2014 P
 % Last Change: Sun Mar 02 03:00 PM 2014 P
 %
-\documentclass{article}
-\usepackage{fullpage}
+\documentclass[letterpaper]{article}
 \usepackage{biblatex}
+\usepackage{fullpage}
 \usepackage{hyperref}
 \usepackage{amsmath}
+%\usepackage[doublespacing]{setspace}
 \addbibresource{CapstoneCitations.bib}
 
 \begin{document}
@@ -110,7 +111,21 @@ defuzzifier then converts this output to a real output to our
 servos\cite{fuzzy2011}. To design this system we will take two approaches, one
 through simulation and one through machine learning. I will work on the Machine
 Learning approach. MATLAB has neural network algorithms that will generate fuzzy
-inference systems. To do this we will generate
+inference systems. To do this we will generate a dataset based on the forward
+kinematics of the robot arm, by giving it the angles of the arm joints and
+calculating the arm position as a result of the joint angles. Inputing this
+dataset into a machine learning framework in MATLAB, we can generate a simple
+fuzzy inference system to control the robotic arm\cite{fuzzymatlab}. To further
+refine the control algorithm, we will need to hand tune and simulate the fuzzy
+inference system, as well as utilize gyro, accelerometer, and IR sensors to help
+guide the arm and avoid obstacles.
+
+\subsubsection{Computer Vision}
+\paragraph{} To be completed\dots uses serial communication from APU to PIC32 to
+transmit desired arm coordinates.
+
+\subsubsection{Control of Hand}
+\paragraph{} Not sure if implementation of hand control is needed for project.
 
 \printbibliography
 

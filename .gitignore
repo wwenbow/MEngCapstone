@@ -11,4 +11,5 @@
 *.bcf
 *.out
 *.bak
+*-blx.bib
 *.tex~
