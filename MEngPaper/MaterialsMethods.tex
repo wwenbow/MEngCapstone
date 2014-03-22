@@ -4,76 +4,114 @@
 %
 \documentclass{article}
 \usepackage{fullpage}
+\usepackage{biblatex}
+\usepackage{hyperref}
+\usepackage{amsmath}
+\addbibresource{CapstoneCitations.bib}
 
 \begin{document}
 
 \section{Materials and Methods}
 \subsection{Materials}
-\paragraph{}
-\textbf{PIC32MX795F512L:} A 32 bit micro-controller for performing the control
+\paragraph{PIC32MX795F512L:} A 32 bit micro-controller for performing the control
 algorithms of the robot. The PIC32MX795F512L comes from SparkFun electronics as
 part of the UBW32 board, which comes preloaded with a bootloader for programming
 the board. The PIC32MX795F512L is programmed in C/C++. To make the device easier
 to use, we loaded an avrdude bootloader onto the device to use the MPIDE
 software. The MPIDE framework allows us to use Arduino libraries on the
 PIC32MX795F512L which helps to accelerate development of basic I/O software for
-the board\cite{pic32datasheet}. \\
+the board\cite{pic32data}.
 
-\textbf{MPU6050:} A gyro and accelerometer for obtaining information about the
+\paragraph{PICKIT3:} A hardware programmer for the PIC32MX795F512L
+microprocessor. The pickit3 and program and debug the PIC32 micro-controller.
+Used to download code onto the UBW32. Useful for installing new bootloaders onto
+the UBW32 and for restoring broken firmware\cite{pickitdata}.
+
+\paragraph{MPU6050:} A gyro and accelerometer for obtaining information about the
 kinematics of the arm and the leg. Uses I2C connection to the PIC32MX795F512L
-for communication.
+for communication\cite{mpu6050data}.
 
-\paragraph{} Computer vision technology has many tools for object detection and
-recognition.  There are many machine learning paradigms that can be applied to
-the task of object detection. Neural Networks and Support Vector Machines(SVM)
-are two technologies that are commonly used in this area. Neural Networks are
-very complex to tweak and configure, but can achieve great accuracy while being
-light weight at run time. SVM is a well understood mathematically and
-configuration of such systems is also well understood. They are light weight if
-used with simple linear kernels, but more complex kernels would be difficult to
-implement on a robot\cite{SVMStackOverflow}. However, all these technologies
-can be difficult to implement on an embedded system such as a robot, so we will
-attempt to do develop new techniques that will be lighter on computational
-power.
+\paragraph{HSR-5498SG:} Servos from Hitec. Utilized to control arm and leg
+joints.  The servos require 6-7 Volts. Each servo requires approximately 200mA.
+The actuation of the arm is accomplished by mini-motors\cite{sscdata}.
 
-\paragraph{} The other component of our robot is the robotic hand. There are
-many different companies and research groups constructing robotic hands for
-many different applications. There are hands designed to be prosthetics, as
-well as hands designed to be integrated into robotic systems. One of the most
-complex is the UB Hand IV, this hand is nearly the same as a human hand in
-terms of capabilities. However, the hand is very heavy and very power hungry,
-so it is not very suitable for most applications\cite{Melchiorri2013}. We want
-to leverage some modern technology to make a robotic hand that is smaller and
-light weight.
+\paragraph{SSC-32:} Servo controller from Lynx motion. The on-board controller
+is an Atmega168-20PU. The SSC-32 is controlled using serial signals from another
+microprocessor or the PC. The control signal is a simple byte stream. The
+controller can specify pin number, servo position, rotation speed, and rotation
+time. It can power 32 servos simultaneously\cite{servodata}.
 
-\subsection{Capstone Technology} \paragraph{} We will be attempting to produce
-a cheap and simple computer vision technology for object detection. Accomplish
-this, we will be utilizing lasers to make the image processing challenges
-simpler. Processing live video using common machine learning based computer
-vision algorithms may prove to be challenging for the smaller computers we will
-be utilizing for the robot. To help make the task simpler, we will utilize a
-laser on the head to scan the space. By using the laser to scan the image, and
-utilizing the live video of the laser motion, we can easily detect edges
-without using complex algorithms. Using these edges we can find objects. We
-will also have another laser on the arm. Once we have an object detected, we
-can use the laser on the head to point at the object, and try to line up the
-arm using it's own laser. By using the two lasers we can try to guide the arm
-towards the object.
+\subsection{Methods}
+\subsubsection{Preliminary Setup}
+\paragraph{} To program the PIC32MX795F512L, we used the Multi-Platform
+Integrated Development Environment(MPIDE) environment from chipKIT. To use MPIDE
+with the program, we had to program the PIC32 with the avrdude bootloader found
+here: \url{https://github.com/chipKIT32/PIC32-avrdude-bootloader}. Using the
+pickit3, we loaded the new bootloader onto the UBW32 and was able to use MPIDE
+to program the board.
 
-\paragraph{} To make the robotic hand, we will be trying to use small
-components as much as possible to reduce the size and weight. By using smaller
-motors, we can make the hand small and still have many degrees of freedom. We
-cannot make the hand as complex as a human hand, so we will need to sacrifice
-some capabilities to make the hand small and low power. A major technology that
-we plan to implement is Shape Memory Alloy(SMA). SMA is a new material that can
-contract when heated this allows us to use it as an actuator. We can utilize
-wires of SMA to control joints and other areas of the hand where space is very
-limited. Combining these various technologies, we can make a hand that is very
-human-like.
+\paragraph{} While the other team members were constructing the mechanical
+components of the legs and arms, I proceeded to set up the basic components of
+the controller. We set up the MPU6050 using the PIC32 I2C libraries in MPIDE and
+proceeded to do basic calibration and testing. Then we set up the servos using
+the SSC-32 controller and the PIC32. Using the PIC32's Universal Asynchronous
+Receiver/Transmitter(UART) we set up a serial communication channel between the
+PIC32 and the SSC-32.  
 
-\bibliographystyle{plain}
-\bibliography{/home/wenbo/Dropbox/UCB/295/MEngPaper/CapstoneCitations}
+\subsubsection{Servo Setup} 
+\paragraph{} To control the servos we would send a string through the PIC32 UART
+channel to the SSC-32. The string encoded the pin number, desired position and
+desired rotation time for one of the 32 servo channels on the
+SSC-32\cite{sscdata}. There were six servos on each leg of the robot and four on
+each arm. On the legs, there were two servos per ankle, one on the knee, and
+three on the hip. In total that gives us six degrees of freedom.  The arms were
+assembled similarly, with one servo on the elbow and three in the shoulder. The
+servos were powered through the SSC-32 board. Each servo requires around 200mA
+of current and 6-7V of voltage\cite{servodata}. We used a 6V power supply to
+power the servos channels on the SSC-32, and a 9V battery to power the logic
+circuit of the servos. The PIC32 was powered through a USB connection to the PC.
+
+\subsubsection{Walking Algorithm Implementation} 
+\paragraph{} The walking algorithms were designed by Zhu Ziqi, a fellow team
+member. He designed and simulated the algorithms in MATALB and SIMULINK and I
+implemented the algorithms in C++ on the PIC32MX795F512L. The algorithms are
+based on Central Pattern Generators, a part of biological neural networks which
+generate rhythmic control signal for human motion\cite{cpggeneral}. The servos
+are controlled using sine waves of varying shapes to generate patterns for
+walking. Ziqi performed simulations to to select the best parameters for the
+sine waves. For our preliminary walking algorithms we only considered the knee
+and hip joints, keeping the other joints rigid. The SSC-32 position control
+signal requires a integer ranged from 500 to 2500, corresponding to
+$180^{\circ}$ of motion\cite{sscdata}. Due to the mechanical construction of the
+arm and leg joints, which mimicked human structure, most joint servos were
+limited to a range between 1250 and 2500. The output from the sine waves would
+be converted to a range in the SSC-32's output and then sent to the servos. 
+\begin{align}
+    sine_{knee\_joint}=sin(eqn\_pending) \label{sineknee}\\
+    sine_{hip\_joint}=sin(eqn\_pending) \label{sinehip}
+\end{align}
+Equations \ref{sineknee} and \ref{sinehip} show the equations for calculating
+the position of each servo as a function of time. The positions of the legs are
+calculated by the PIC32 and sent to the SSC-32.
+
+\subsubsection{Leg Balance Algorithm}
+%TODO: Get Yanchen's algorithms
+\paragraph{} Waiting for team member to finish simulations of control
+algorithms. Likely will use the MPU6050 to get the information about balance.
+
+\subsubsection{Arm Control Algorithm}
+\paragraph{} The arms are controlled using a Fuzzy Inference System. A fuzzy
+inference system comprises of a fuzzifier, inference system, and defuzzifier.
+The fuzzyfier takes inputs and out converts them to fuzzy values of a set of
+fuzzy variables for the inference system. In this case the input is the desired
+position of the arm in 3D space. The inference system is a set of if else
+statements that determine a desired output from the fuzzy values. The
+defuzzifier then converts this output to a real output to our
+servos\cite{fuzzy2011}. To design this system we will take two approaches, one
+through simulation and one through machine learning. I will work on the Machine
+Learning approach. MATLAB has neural network algorithms that will generate fuzzy
+inference systems. To do this we will generate
+
+\printbibliography
 
 \end{document}
-
-

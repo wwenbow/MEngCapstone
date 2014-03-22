@@ -1,2 +1,13 @@
 *.swp
 *.swo
+*.aux
+*.pdf
+*.ps
+*.log
+*.dvi
+*.blg
+*.bbl
+*.run.xml
+*.bcf
+*.out
+*.tex~
