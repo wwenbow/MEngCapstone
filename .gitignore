@@ -10,4 +10,5 @@
 *.run.xml
 *.bcf
 *.out
+*.bak
 *.tex~
