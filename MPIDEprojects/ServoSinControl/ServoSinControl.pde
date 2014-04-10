@@ -17,7 +17,7 @@
  */
 static const int LED_PIN = 65; //LED2 red
 static const int TIME_STEP = 1000; //Time step in milliseconds
-static const int NUM_SERVOS = 4; //Servos numbered 0-31
+static const int NUM_SERVOS = 12; //Servos numbered 0-31
 
 String servoIDs[NUM_SERVOS];
 String sscOutputs[NUM_SERVOS];
@@ -46,10 +46,21 @@ void setup()
     digitalWrite(LED_PIN, HIGH); //High is off
 
     //Initialize Servo pins;
-    servoIDs[0] = 0; //Hip in/out
-    servoIDs[1] = 3; //Hip forward back
-    servoIDs[2] = 4; //Knee
-    servoIDs[3] = 7; //Ankle forward back
+    //Right leg 0-5
+    servoIDs[0] = 0; //Rotate
+    servoIDs[1] = 1; //Hip in/out
+    servoIDs[2] = 2; //Hip front/back
+    servoIDs[3] = 3; //Knee
+    servoIDs[4] = 4; //Ankle front/back
+    servoIDs[5] = 5; //Ankle left/right
+
+    //Left leg 16-21
+    servoIDs[6] = 16; //Rotate
+    servoIDs[7] = 17; //Hip in/out
+    servoIDs[8] = 18; //Hip front/back
+    servoIDs[9] = 19; //Knee
+    servoIDs[10] = 20; //Ankle front/back
+    servoIDs[11] = 21; //Ankle left/right
 }
 
 void loop()
