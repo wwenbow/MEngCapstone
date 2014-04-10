@@ -20,12 +20,12 @@ static const int TIME_STEP = 1000; //Time step in milliseconds
 static const int NUM_SERVOS = 12; //Servos numbered 0-31
 
 enum JointType { 
-    HIP1, 
-    HIP2, 
-    HIP3, 
-    KNEE, 
-    ANKLE1, 
-    ANKLE2 
+    HIP1,   //Hip Rotate
+    HIP2,   //Hip in/out
+    HIP3,   //Hip front/back
+    KNEE,   //Knee
+    ANKLE1, //Ankle front/back, 
+    ANKLE2  //Ankle left/right 
 };
 
 typedef struct {
@@ -64,7 +64,7 @@ void setup()
 
     //Initialize Servo pins;
     //Right leg 0-5
-    servoIDs[0] = 0; //Rotate
+    servoIDs[0] = 0; //Hip Rotate
     servoIDs[1] = 1; //Hip in/out
     servoIDs[2] = 2; //Hip front/back
     servoIDs[3] = 3; //Knee
@@ -72,7 +72,7 @@ void setup()
     servoIDs[5] = 5; //Ankle left/right
 
     //Left leg 16-21
-    servoIDs[6] = 16; //Rotate
+    servoIDs[6] = 16; //Hip Rotate
     servoIDs[7] = 17; //Hip in/out
     servoIDs[8] = 18; //Hip front/back
     servoIDs[9] = 19; //Knee
