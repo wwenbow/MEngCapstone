@@ -19,6 +19,23 @@ static const int LED_PIN = 65; //LED2 red
 static const int TIME_STEP = 1000; //Time step in milliseconds
 static const int NUM_SERVOS = 12; //Servos numbered 0-31
 
+enum JointType { 
+    HIP1, 
+    HIP2, 
+    HIP3, 
+    KNEE, 
+    ANKLE1, 
+    ANKLE2 
+};
+
+typedef struct {
+    JointType jointType;
+    String pin;
+    String postion;
+    String movTime;
+    String command;
+} Servo;
+
 String servoIDs[NUM_SERVOS];
 String sscOutputs[NUM_SERVOS];
 String sscSpeeds[NUM_SERVOS];
