@@ -2,11 +2,12 @@
 %     Created: Sun Mar 02 03:00 PM 2014 P
 % Last Change: Sun Mar 02 03:00 PM 2014 P
 %
-\documentclass[letterpaper]{article}
-\usepackage{biblatex}
+\documentclass[letterpaper,12pt]{article}
+\usepackage[backend=bibtex]{biblatex}
 \usepackage{fullpage}
 \usepackage{hyperref}
 \usepackage{amsmath}
+\usepackage{graphicx}
 %\usepackage[doublespacing]{setspace}
 \addbibresource{CapstoneCitations.bib}
 
@@ -39,90 +40,121 @@ computer vision can be built cheaply and effectively.
 \section{Introduction}
 \paragraph{}Robots are being widely adopted by in many industries, and there is
 a growing need for humanoid robotics. Humanoid robotic components can have many
-applications such as manufacturing and prosthetics. Currently humanoid robots
-and robot subsystems are not in wide use, so it is a good target for our
-sponsor, Bay Area IP, which is looking do develop intellectual property that
-they could license to others.
+applications such as manufacturing and prosthetics. A key component of our
+project, the mechanical design of a humanoid robotic hand can be applied to both
+manufacturing and prosthetics. Currently humanoid robots and robot subsystems
+are not in wide use, so it is a good target for our sponsor, Bay Area IP, which
+is looking do develop intellectual property that they could license to others.
 
 \paragraph{}There are many technical challenges that come with trying to
 reproduce the human form. The human body is very complex and there are many
 different components that need to interact and function correctly. The human
-hand has 27 degrees of freedom, and it is very difficult to reproduce that;
-however, modern manufacturing techniques such as 3D printing can get us closer
-to reproducing that complexity. 
+hand has 27 degrees of freedom, and it is very difficult to reproduce that
+complexity \cite{ElKoura2003}. However, modern manufacturing techniques such as
+3D printing can get us closer to reproducing that complexity. Reproducing human
+capabilities through software is also a great challenges. It is difficult to
+design and implement complex control systems capable of mimicking the human
+body. New computer hardware is allowing us to create more complex robots capable
+of performing human like tasks.
 
 \paragraph{}The subsystems we designed were the arms, hands, legs, feet, and
 vision systems.  We designed the mechanical structure of these components and
-the software for controlling the different parts. 
+the software for controlling the different parts. For the hands we did CAD
+design of the hand structure. We also performed tests on using shape memory
+alloy(SMA) to actuate components of in the fingers. Simple prototypes of the
+arms and legs were constructed using off-the-shelf components to provide testing
+platforms for the software. The control software was simulated in MATLAB and
+then implemented in C++ on a microcontroller. The computer vision system was
+implemented on an AMD APU, and utilized a novel laser system to augment the
+computer vision algorithms.
+
+\paragraph{}I was responsible for the construction of the mechanical arm, leg,
+and the programming of the microcontroller. We implemented a simple control
+algorithm for robot walking based on the Central Pattern Generator paradigm of
+control.  This report will describe the materials and methods used to construct
+the arms, and legs, as well as the programming of the microcontroller for basic
+control of the robot. I will also give an overview of the other components of
+the project.
 
 \section{Literature Review}
-\subsection{Current Technology}
-\paragraph{}Currently many manufacturing robots do not utilize computer vision to
-accomplish their tasks. Many manufacturing robots simply run a simple preset
-routine without much intellect driving them. As computational power becomes
-cheaper and computer vision algorithms become more mature, these new
-technologies can offer much needed improvements to manufacturing robotics. High
-tech areas, such as computer vision, can be very profitable targets for our
-sponsor, Bay Area IP, LLC. Our sponsor seeks to generate intellectual property
-to license out to companies in the robotics field, so it will be profitable to
-focus on the high tech areas. 
+\subsection{Computer Vision}
+\paragraph{}Object detection has been well studied in a variety of applications.
+Many machine learning algorithms are utilized for object detection such as
+Support Vector Machines or Convolutional Neural
+Networks\cite{Barbu2012},\cite{krizhevsky2012imagenet}. Many of the object
+detection algorithms utilize Histogram of Oriented Gradient(HOG) features, which
+are based on taking a gradient over the image and generating histograms of
+gradient angles and magnitudes using overlapping sections of the
+image\cite{Dalal2005}. 
 
-\paragraph{} There exist some manufacturing robots on the market that are
-utilizing computer vision to accomplish complex production line tasks. One such
-robot is produced by Italy based SIR SpA. The robot utilizes stereoscopic 3D
-vision systems to find and pick up parts from an unstructured bin. However,
-this system utilizes a large camera and complex algorithms to find and detect
-individual parts in a disorganized bin full of such parts\cite{SIRfuture}. Our
-Capstone technology seeks to provide a simpler computer vision solution for
-less complex object detection problems.
+\paragraph{}Complex object detection algorithms can be very resource intensive,
+as they often need to scan the image multiple times at different resolutions to
+find all the objects\cite{Felzenszwalb2013}. This can be a very expensive
+process on an embedded system such as the robot. In a cluttered space it can be
+very difficult to detect robots correctly in real time. On a robotic system
+there usually exist other sensors that can supplement the visual information to
+help ease this process. Utilization of depth sensors can help process the visual
+information more easily\cite{Gould2008}.
 
-\paragraph{} Computer vision technology has many tools for object detection and
-recognition.  There are many machine learning paradigms that can be applied to
-the task of object detection. Neural Networks and Support Vector Machines(SVM)
-are two technologies that are commonly used in this area. Neural Networks are
-very complex to tweak and configure, but can achieve great accuracy while being
-light weight at run time. SVM is a well understood mathematically and
-configuration of such systems is also well understood. They are light weight if
-used with simple linear kernels, but more complex kernels would be difficult to
-implement on a robot\cite{SVMStackOverflow}. However, all these technologies
-can be difficult to implement on an embedded system such as a robot, so we will
-attempt to do develop new techniques that will be lighter on computational
-power.
+\paragraph{}Computer vision techniques could have many applications for
+manufacturing robots. As manufacturing robotics advance, they will need more
+accuracy and intelligence to accomplish their tasks, and vision is a good tool
+for accomplishing this. Already there are manufacturing robots utilizing vision
+for tasks such as part recognition and sorting\cite{SIRfuture}.
 
-\paragraph{} The other component of our robot is the robotic hand. There are
-many different companies and research groups constructing robotic hands for
-many different applications. There are hands designed to be prosthetics, as
-well as hands designed to be integrated into robotic systems. One of the most
-complex is the UB Hand IV, this hand is nearly the same as a human hand in
-terms of capabilities. However, the hand is very heavy and very power hungry,
-so it is not very suitable for most applications\cite{Melchiorri2013}. We want
-to leverage some modern technology to make a robotic hand that is smaller and
-light weight.
+\subsection{Robotic Hand}
+\paragraph{}There are many different companies and research groups constructing
+robotic hands for many different applications. There are hands designed to be
+prosthetics, as well as hands designed to be integrated into robotic systems.
+One of the most complex is the UB Hand IV, this hand is nearly the same as a
+human hand in terms of capabilities. However, the hand is very heavy and very
+power hungry, so it is not very suitable for most
+applications\cite{Melchiorri2013}. However, most light weight hands are lacking
+in complexity and function. The this recently developed lightweight hand only
+has five degrees of freedom\cite{takaki2011high}. To develop a hand that is both
+light weight, small, and fully functional will require new design techniques. 
 
-\subsection{Capstone Technology} \paragraph{} We will be attempting to produce
-a cheap and simple computer vision technology for object detection. Accomplish
-this, we will be utilizing lasers to make the image processing challenges
-simpler. Processing live video using common machine learning based computer
-vision algorithms may prove to be challenging for the smaller computers we will
-be utilizing for the robot. To help make the task simpler, we will utilize a
-laser on the head to scan the space. By using the laser to scan the image, and
-utilizing the live video of the laser motion, we can easily detect edges
-without using complex algorithms. Using these edges we can find objects. We
-will also have another laser on the arm. Once we have an object detected, we
-can use the laser on the head to point at the object, and try to line up the
-arm using it's own laser. By using the two lasers we can try to guide the arm
-towards the object.
+\subsection{Shape Memory Alloy}
+\paragraph{}We want to leverage some modern technology to make a robotic hand
+that is smaller and light weight. One potential tool is Shape Memory Alloy
+(SMA), a type of material that can expand or contract when
+heated\cite{Schetky1982}. Many metallic alloys exhibit the shape memory
+effect\cite{Wayman1993}. These alloys can be deformed at a lower temperature,
+when heated, they will return to their original shape. We can use this do
+accomplish actuation using a small form device heated through electrical
+current\cite{Ikuta1990}. This actuation can be used in the fingers of the hand
+, where space is very limited.
 
-\paragraph{} To make the robotic hand, we will be trying to use small
-components as much as possible to reduce the size and weight. By using smaller
-motors, we can make the hand small and still have many degrees of freedom. We
-cannot make the hand as complex as a human hand, so we will need to sacrifice
-some capabilities to make the hand small and low power. A major technology that
-we plan to implement is Shape Memory Alloy(SMA). SMA is a new material that can
-contract when heated this allows us to use it as an actuator. We can utilize
-wires of SMA to control joints and other areas of the hand where space is very
-limited. Combining these various technologies, we can make a hand that is very
-human-like.
+\subsection{Robot Leg}
+\paragraph{}A popular control method for robot locomotion is Central Pattern
+Generators (CPG). Central pattern generators are neural networks that generate
+periodic control signals in the body. This control can be generated in the
+absence of feedback signals. The human body utilizes this
+system for many different rythmic motor functions that the body needs to
+perform\cite{cpggeneral}. 
+
+\paragraph{}Central pattern generator can also be adapted to the locomotion of
+robots. CPG can be used to control locomotion of bipedal robots, as well as
+hexapods and octopods. Using coupled oscillators one can design a control system
+for bipedal robots. CPG are well suited for feedback control of bipedal
+locomotion. Properly implemented CPG also allow for higher level control of the
+walking without needing to worry about exact servo outputs. However CPGs are not
+well understood and difficult to design properly\cite{Ijspeert2008}.
+
+\subsection{Robot Arm}
+\paragraph{}For the controls of our robot arm we will be implementing Fuzzy
+Logic control systems. These control systems can handle nonlinearities well they
+are well studied for control of robotic systems such as arms\cite{Scharf1985}.
+Fuzzy logic controllers can also be used to control balance of the robotic legs,
+treating the legs as an inverted pendulum\cite{hwang1992stability}.
+
+\paragraph{}Rather than using complex models, a fuzzy logic controller relies on
+empirical rules, this makes the controller computationally cheap and well suited
+for embedded applications. A fuzzy logic controller has three main components: a
+fuzzifier, a rule base, and an defuzzifier. In the fuzzifier, analog inputs are
+fuzzified into fuzzy logic values between 0 and 1. The fuzzy values are put into
+the rule base to determine a set of fuzzy outputs, and then the defuzzifier
+combines the outputs into an analog output\cite{Mailah2000}.
 
 
 \section{Materials and Methods}
@@ -130,30 +162,90 @@ human-like.
 \paragraph{PIC32MX795F512L:}A 32 bit micro-controller for performing the control
 algorithms of the robot. The PIC32MX795F512L comes from SparkFun electronics as
 part of the UBW32 board, which comes preloaded with a bootloader for programming
-the board. The PIC32MX795F512L is programmed in C/C++. To make the device easier
-to use, we loaded an avrdude bootloader onto the device to use the MPIDE
-software. The MPIDE framework allows us to use Arduino libraries on the
-PIC32MX795F512L which helps to accelerate development of basic I/O software for
-the board\cite{pic32data}.
+the board. See figure \ref{ubw32fig} for an image of the UBW32 board. The
+PIC32MX795F512L is programmed in C/C++. To make the device easier to use, we
+loaded an avrdude bootloader onto the device to use the MPIDE software. The
+MPIDE framework allows us to use Arduino libraries on the PIC32MX795F512L which
+helps to accelerate development of basic I/O software for the
+board\cite{pic32data}.
+
+\begin{figure}
+  \centering
+    \includegraphics[width=0.75\textwidth]{figures/UBW32_v24_SparkFun.JPG}
+  \caption{UBW32 board from SparkFun electronics}
+  \label{ubw32fig}
+\end{figure}
 
 \paragraph{PICKIT3:}A hardware programmer for the PIC32MX795F512L
-microprocessor. The pickit3 and program and debug the PIC32 micro-controller.
-Used to download code onto the UBW32. Useful for installing new bootloaders onto
-the UBW32 and for restoring broken firmware\cite{pickitdata}.
+microprocessor. See figure \ref{pickit3fig}. The pickit3 and program and debug
+the PIC32 micro-controller.  Used to download code onto the UBW32. Useful for
+installing new bootloaders onto the UBW32 and for restoring broken
+firmware\cite{pickitdata}.
+
+\begin{figure}
+  \centering
+    \includegraphics[width=0.3\textwidth]{figures/pickit3.jpg}
+  \caption{PICkit 3 In-Circuit Debugger from Microchip}
+  \label{pickit3fig}
+\end{figure}
 
 \paragraph{MPU6050:}A gyro and accelerometer for obtaining information about the
-kinematics of the arm and the leg. Uses I2C connection to the PIC32MX795F512L
-for communication\cite{mpu6050data}.
+kinematics of the arm and the leg. See figure \ref{mpufig}. Uses I2C connection
+to the PIC32MX795F512L for communication\cite{mpu6050data}.
+
+\begin{figure}
+  \centering
+    \includegraphics[width=0.2\textwidth]{figures/mpu-6050.jpg}
+  \caption{MPU-6050 Triple axis accelerometer and gyro}
+  \label{mpufig}
+\end{figure}
 
 \paragraph{HSR-5498SG:}Servos from Hitec. Utilized to control arm and leg
-joints.  The servos require 6-7 Volts. Each servo requires approximately 200mA.
-The actuation of the arm is accomplished by mini-motors\cite{sscdata}.
+joints. See figure \ref{hsrfig}. The servos require 6-7 Volts. Each servo
+requires at least 200mA when running without load, and over 1A when stalled.
+The actuation of the arm is accomplished by mini-motors rather than
+servos\cite{sscdata}.
 
-\paragraph{SSC-32:}Servo controller from Lynx motion. The on-board controller
-is an Atmega168-20PU. The SSC-32 is controlled using serial signals from another
-microprocessor or the PC. The control signal is a simple byte stream. The
-controller can specify pin number, servo position, rotation speed, and rotation
-time. It can power 32 servos simultaneously\cite{servodata}.
+\begin{figure}
+  \centering
+    \includegraphics[width=0.4\textwidth]{figures/191_1_HSR-5498SG_HMI_Premium_Robot_Servo-1.jpg}
+  \caption{HSR-5498SG servo from Hitech}
+  \label{hsrfig}
+\end{figure}
+
+\paragraph{SSC-32:}Servo controller from Lynx motion. The on-board controller is
+an Atmega168-20PU. See figure \ref{sscfig}. The SSC-32 is controlled using
+serial signals from another microprocessor or the PC. The control signal is a
+simple byte stream. The controller can specify pin number, servo position,
+rotation speed, and rotation time. It can power 32 servos
+simultaneously\cite{servodata}.
+
+\begin{figure}
+  \centering
+    \includegraphics[width=0.4\textwidth]{figures/lynxmotion-ssc-32-servo-controller-large.jpg}
+  \caption{SSC-32 servo controller from Lynxmotion}
+  \label{sscfig}
+\end{figure}
+
+\paragraph{VLT100-4002}Power supply for powering the servos. See figure
+\ref{vltfig}. 5V output capable of supplying 3A to 12A of current\cite{vltdata}.
+
+\begin{figure}
+  \centering
+    \includegraphics[width=0.4\textwidth]{figures/VLT100-4002.jpg}
+  \caption{VLT100-4002 power supply}
+  \label{vltfig}
+\end{figure}
+
+\paragraph{Yihua 1502DD}Adjustable power supply for servos. See figure
+\ref{yihuafig}. 0-15V output and 0-2A output\cite{yihuadata}. 
+
+\begin{figure}
+  \centering
+    \includegraphics[width=0.4\textwidth]{figures/Power_Supply_YIHUA_1502DD.jpg}
+  \caption{Yihua 1502DD DC power supply}
+  \label{yihuafig}
+\end{figure}
 
 \subsection{Methods}
 \subsubsection{Preliminary Setup}
