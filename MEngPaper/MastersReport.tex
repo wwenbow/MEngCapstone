@@ -6,9 +6,12 @@
 \usepackage[backend=bibtex]{biblatex}
 \usepackage{fullpage}
 \usepackage{hyperref}
+\hypersetup{colorlinks=true,urlcolor=blue}
+\usepackage[all]{hypcap}
 \usepackage{amsmath}
 \usepackage{graphicx}
 %\usepackage[doublespacing]{setspace}
+%\usepackage[onehalfspacing]{setspace}
 \addbibresource{CapstoneCitations.bib}
 
 \pagestyle{plain}
@@ -22,19 +25,16 @@
 \maketitle
 
 \begin{abstract}
-There is a growing need for manufacturing robots in many different sectors of
-industry. As demand increases and technology improves there will be a great
-demand for robots that can better integrate into the workplace. We propose two
-new areas of Intellectual Property opportunities for Bay Area IP, LLC: Computer
-Vision and Robotic Hands. There will be a great demand for robots that have high
-precision and can better interact with human co-workers, as current
-manufacturing robots are large machinery that are often not safe for human
-workers. Computer vision allows the robot to be more aware of their surrounding,
-and perform more tasks precisely. Humanoid hands also allow for more precision
-and better integration with tools workspaces designed for humans. Are
-preliminary results show great difficulty in building suitable robotic hands
-with high dexterity without many the device large and cumbersome, but simple
-computer vision can be built cheaply and effectively.  
+There is a growing need for robots in many different sectors of industry. As
+demand increases and technology improves there will be a great demand for robots
+that can better integrate into the workplace and the home. Humanoid robotics are
+a potential technology that can bridge this gap. Our sponsor, Bay Area IP LLC,
+is exploring new Intellectual Property potential in this exciting field. We have
+designed and prototyped many humanoid robot components that can be used as a
+platform for exploring potential technologies as wells as serve as sources of
+new IP. This report describes the prototype robot leg and embedded software
+system for the robot platform, as well as summarizing the other subsystems
+worked on by the team.
 \end{abstract}
 
 \section{Introduction}
@@ -70,11 +70,10 @@ computer vision algorithms.
 
 \paragraph{}I was responsible for the construction of the mechanical arm, leg,
 and the programming of the microcontroller. We implemented a simple control
-algorithm for robot walking based on the Central Pattern Generator paradigm of
-control.  This report will describe the materials and methods used to construct
-the arms, and legs, as well as the programming of the microcontroller for basic
-control of the robot. I will also give an overview of the other components of
-the project.
+algorithm for robot walking. This report will describe the materials and methods
+used to construct the arms, and legs, as well as the programming of the
+microcontroller for basic control of the robot. I will also give an overview of
+the other components of the project.
 
 \section{Literature Review}
 \subsection{Computer Vision}
@@ -248,23 +247,28 @@ simultaneously\cite{servodata}.
 \end{figure}
 
 \subsection{Methods}
-\subsubsection{Preliminary Setup}
+\subsubsection{Microcontroller Setup}
 \paragraph{}To program the PIC32MX795F512L, we used the Multi-Platform
 Integrated Development Environment(MPIDE) environment from chipKIT. To use MPIDE
 with the program, we had to program the PIC32 with the avrdude bootloader found
 here: \url{https://github.com/chipKIT32/PIC32-avrdude-bootloader}. Using the
 pickit3, we loaded the new bootloader onto the UBW32 and was able to use MPIDE
-to program the board.
+to program the board. MPIDE utilizes the Arduino libraries and Arduino style C++
+code for programming the board. Through MPIDE, there are a wide variety of
+libraries available for performing basic I/O tasks using the PIC32.
 
-\paragraph{}While the other team members were constructing the mechanical
-components of the legs and arms, I proceeded to set up the basic components of
-the controller. We set up the MPU6050 using the PIC32 I2C libraries in MPIDE and
-proceeded to do basic calibration and testing. Then we set up the servos using
-the SSC-32 controller and the PIC32. Using the PIC32's Universal Asynchronous
-Receiver/Transmitter(UART) we set up a serial communication channel between the
-PIC32 and the SSC-32.  
+\subsubsection{MPU-6050 Setup}
+\paragraph{}The MPU-6050 utilizes an I2C connection to the read and write data.
+The device readings are stored on a 1024 byte FIFO buffer on the
+MPU\cite{mpu6050data}. The MPU can be used to acquire sensory information for
+controlling the motions of the legs and the arms. We set up the MPU6050 using
+the PIC32 I2C libraries in MPIDE. We utilized the \verb!Wire.h! library to read
+and write to the I2C bus of the PIC32\cite{Krodal2013}.
 
-\subsubsection{Servo Setup} 
+\subsubsection{Leg Design}
+\paragraph{}The leg was designed using with six motors on each leg. The le
+
+\subsubsection{Servo Setup}
 \paragraph{} To control the servos we would send a string through the PIC32 UART
 channel to the SSC-32. The string encoded the pin number, desired position and
 desired rotation time for one of the 32 servo channels on the
@@ -277,7 +281,7 @@ of current and 6-7V of voltage\cite{servodata}. We used a 6V power supply to
 power the servos channels on the SSC-32, and a 9V battery to power the logic
 circuit of the servos. The PIC32 was powered through a USB connection to the PC.
 
-\subsubsection{Walking Algorithm Implementation} 
+\subsubsection{Walking Algorithm Implementation}
 \paragraph{} The walking algorithms were designed by Zhu Ziqi, a fellow team
 member. He designed and simulated the algorithms in MATALB and SIMULINK and I
 implemented the algorithms in C++ on the PIC32MX795F512L. The algorithms are
