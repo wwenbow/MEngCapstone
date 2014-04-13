@@ -10,6 +10,7 @@
 \usepackage[all]{hypcap}
 \usepackage{amsmath}
 \usepackage{graphicx}
+\usepackage[font=small,labelfont=bf]{caption}
 %\usepackage[doublespacing]{setspace}
 %\usepackage[onehalfspacing]{setspace}
 \addbibresource{CapstoneCitations.bib}
@@ -263,23 +264,68 @@ The device readings are stored on a 1024 byte FIFO buffer on the
 MPU\cite{mpu6050data}. The MPU can be used to acquire sensory information for
 controlling the motions of the legs and the arms. We set up the MPU6050 using
 the PIC32 I2C libraries in MPIDE. We utilized the \verb!Wire.h! library to read
-and write to the I2C bus of the PIC32\cite{Krodal2013}.
+and write to the I2C bus of the PIC32\cite{Krodal2013}. There are a total of
+five SDA pins on the PIC32MX795F512L, so we can have a minimum of five of these
+devices connected to our microcontroller.
 
 \subsubsection{Leg Design}
-\paragraph{}The leg was designed using with six motors on each leg. The le
+\paragraph{}The leg was designed using with six servos on each leg. Three servos
+on the hip mimicked the ball and socket configuration of the human hip joint,
+which has three degrees of freedom\cite{SiasJr1990}. The three modes of motion
+are along the sagittal, frontal, and transverse planes\cite{Fiscell2005}. The
+knee has one degree of freedom, and the ankle has two degrees of freedom in the
+sagittal and frontal planes. The shins and pelvis were constructed from aluminum
+U channels. The thighs where made from aluminum cylinders, and the feet were
+aluminum plates. Figure \ref{protolegfig} shows the complete product. The SSC-32
+servo controller was attached to the hip. A wire connects the servo controller
+to the power supply and the PIC32 controller. 
+
+\begin{figure}
+  \centering
+    \includegraphics[width=0.7\textwidth,angle=270]{figures/LegPrototype.jpg}
+  \caption{Prototype leg constructed of aluminum. Total of 6 degrees of freedom
+  on each leg. The servo controller is attached to the hip}
+  \label{protolegfig}
+\end{figure}
 
 \subsubsection{Servo Setup}
-\paragraph{} To control the servos we would send a string through the PIC32 UART
-channel to the SSC-32. The string encoded the pin number, desired position and
-desired rotation time for one of the 32 servo channels on the
-SSC-32\cite{sscdata}. There were six servos on each leg of the robot and four on
-each arm. On the legs, there were two servos per ankle, one on the knee, and
-three on the hip. In total that gives us six degrees of freedom.  The arms were
-assembled similarly, with one servo on the elbow and three in the shoulder. The
-servos were powered through the SSC-32 board. Each servo requires around 200mA
-of current and 6-7V of voltage\cite{servodata}. We used a 6V power supply to
-power the servos channels on the SSC-32, and a 9V battery to power the logic
-circuit of the servos. The PIC32 was powered through a USB connection to the PC.
+\paragraph{}The servos each had a range of 180 degrees. The SSC-32 represents
+this as a value between 500 and 2500. Due to the mechanical construction most
+joints had a limited range of motion. Most joints had a range of 100 degrees.
+Figure \ref{servosetupfig}. The range of each servo was determined individually
+through testing. For most servos the neutral position was 1500, which results in
+a standing position. Each servo requires approximately 6V and 200mA to 1A of
+current depending on the load\cite{servodata}. For our tests, we used the Yihua
+DC power supply which is adjustable up to 15V and supplied up to
+2A\cite{yihuadata}.
+
+\begin{figure}
+  \centering
+    \includegraphics[width=1.0\textwidth]{figures/LegConfiguration.png}
+  \caption{Location of the servos on the leg, and the directions and ranges of
+  motion for each servo in terms of the SSC-32 position outputs}
+  \label{servosetupfig}
+\end{figure}
+
+\subsubsection{Servo Control}
+\paragraph{}To control the servos we utilized a SSC-32 servo controller. The
+controller has 32 channels for servo control. Each channel can be given a
+position, rotation speed, and rotation time. Multiple servo channels can be
+controlled simultaneously through a single command The SSC-32 is powered through
+a 9V battery. The controls are given in the form of strings, the following is an
+example of the commands used for SSC-32.
+\begin{verbatim}
+#5 P1600 T1000 <cr>
+\end{verbatim}
+The \#5 defines the channel number which ranges from 0 to 31. The P1600 sets the
+position of the servo from 500 to 2500. The T1000 sets the time of rotation in
+milliseconds. The carriage return signifies the completion of a command. The
+following is an example command for simultaneous movement of servos:
+\begin{verbatim}
+#5 P1600 #10 P750 T2500
+\end{verbatim}
+In this case all the servos adjust their speed so they arrive at the specified
+position in the specified time.
 
 \subsubsection{Walking Algorithm Implementation}
 \paragraph{} The walking algorithms were designed by Zhu Ziqi, a fellow team
