@@ -2,8 +2,8 @@
 %     Created: Sun Mar 02 03:00 PM 2014 P
 % Last Change: Sun Mar 02 03:00 PM 2014 P
 %
-\documentclass[letterpaper,12pt]{article}
-\usepackage[backend=bibtex]{biblatex}
+\documentclass[letterpaper,12pt]{report}
+\usepackage[sorting=none,backend=bibtex]{biblatex}
 \usepackage{fullpage}
 \usepackage{hyperref}
 \hypersetup{colorlinks=true,urlcolor=blue}
@@ -23,7 +23,7 @@
 
 \begin{document}
 
-\maketitle
+\input{titlepage.tex}
 
 \begin{abstract}
 There is a growing need for robots in many different sectors of industry. As
@@ -268,44 +268,14 @@ and write to the I2C bus of the PIC32\cite{Krodal2013}. There are a total of
 five SDA pins on the PIC32MX795F512L, so we can have a minimum of five of these
 devices connected to our microcontroller.
 
-\subsubsection{Leg Design}
-\paragraph{}The leg was designed using with six servos on each leg. Three servos
-on the hip mimicked the ball and socket configuration of the human hip joint,
-which has three degrees of freedom\cite{SiasJr1990}. The three modes of motion
-are along the sagittal, frontal, and transverse planes\cite{Fiscell2005}. The
-knee has one degree of freedom, and the ankle has two degrees of freedom in the
-sagittal and frontal planes. The shins and pelvis were constructed from aluminum
-U channels. The thighs where made from aluminum cylinders, and the feet were
-aluminum plates. Figure \ref{protolegfig} shows the complete product. The SSC-32
-servo controller was attached to the hip. A wire connects the servo controller
-to the power supply and the PIC32 controller. 
-
-\begin{figure}
-  \centering
-    \includegraphics[width=0.7\textwidth,angle=270]{figures/LegPrototype.jpg}
-  \caption{Prototype leg constructed of aluminum. Total of 6 degrees of freedom
-  on each leg. The servo controller is attached to the hip}
-  \label{protolegfig}
-\end{figure}
-
 \subsubsection{Servo Setup}
 \paragraph{}The servos each had a range of 180 degrees. The SSC-32 represents
 this as a value between 500 and 2500. Due to the mechanical construction most
 joints had a limited range of motion. Most joints had a range of 100 degrees.
-Figure \ref{servosetupfig}. The range of each servo was determined individually
-through testing. For most servos the neutral position was 1500, which results in
-a standing position. Each servo requires approximately 6V and 200mA to 1A of
-current depending on the load\cite{servodata}. For our tests, we used the Yihua
-DC power supply which is adjustable up to 15V and supplied up to
-2A\cite{yihuadata}.
-
-\begin{figure}
-  \centering
-    \includegraphics[width=1.0\textwidth]{figures/LegConfiguration.png}
-  \caption{Location of the servos on the leg, and the directions and ranges of
-  motion for each servo in terms of the SSC-32 position outputs}
-  \label{servosetupfig}
-\end{figure}
+The exact ranges were tested and calibrated after the completion other robot
+leg. Each servo requires approximately 6V and 200mA to 1A of current depending
+on the load\cite{servodata}. For our tests, we used the Yihua DC power supply
+which is adjustable up to 15V and supplied up to 2A\cite{yihuadata}.
 
 \subsubsection{Servo Control}
 \paragraph{}To control the servos we utilized a SSC-32 servo controller. The
@@ -319,10 +289,11 @@ example of the commands used for SSC-32.
 \end{verbatim}
 The \#5 defines the channel number which ranges from 0 to 31. The P1600 sets the
 position of the servo from 500 to 2500. The T1000 sets the time of rotation in
-milliseconds. The carriage return signifies the completion of a command. The
-following is an example command for simultaneous movement of servos:
+milliseconds. The carriage return(\verb!<cr>!) signifies the completion of a
+command. The following is an example command for simultaneous movement of
+servos:
 \begin{verbatim}
-#5 P1600 #10 P750 T2500
+#5 P1600 #10 P750 T2500 <cr>
 \end{verbatim}
 In this case all the servos adjust their speed so they arrive at the specified
 position in the specified time.
@@ -330,57 +301,205 @@ position in the specified time.
 \subsubsection{Walking Algorithm Implementation}
 \paragraph{} The walking algorithms were designed by Zhu Ziqi, a fellow team
 member. He designed and simulated the algorithms in MATALB and SIMULINK and I
-implemented the algorithms in C++ on the PIC32MX795F512L. The algorithms are
-based on Central Pattern Generators, a part of biological neural networks which
-generate rhythmic control signal for human motion\cite{cpggeneral}. The servos
-are controlled using sine waves of varying shapes to generate patterns for
-walking. Ziqi performed simulations to to select the best parameters for the
-sine waves. For our preliminary walking algorithms we only considered the knee
-and hip joints, keeping the other joints rigid. The SSC-32 position control
-signal requires a integer ranged from 500 to 2500, corresponding to
-$180^{\circ}$ of motion\cite{sscdata}. Due to the mechanical construction of the
-arm and leg joints, which mimicked human structure, most joint servos were
-limited to a range between 1250 and 2500. The output from the sine waves would
-be converted to a range in the SSC-32's output and then sent to the servos. 
+implemented the algorithms in C++ on the PIC32MX795F512L. The servo positions
+were determined from a linear combination of sine waves. For our preliminary
+walking algorithms we only considered the knee and hip joints. The SSC-32
+position control signal requires a integer ranged from 500 to 2500,
+corresponding to $180^{\circ}$ of motion\cite{sscdata}. Due to the mechanical
+construction of the arm and leg joints, which mimicked human structure, most
+joint servos were limited to a range between 1250 and 2500. The output from the
+sine waves would be converted to a range in the SSC-32's output and then sent to
+the servos. Equations \ref{thetahip} and \ref{thetaknee} show the equations for
+calculating the position of each servo as a function of time. The angle of the
+hip is a degree relative to the vertical axis of the 3D space, while the angle
+of the knee is relative to the axis along the thigh of the robot.
 \begin{align}
-    sine_{knee\_joint}=sin(eqn\_pending) \label{sineknee}\\
-    sine_{hip\_joint}=sin(eqn\_pending) \label{sinehip}
+    \phi_{3}(t)&=a_{13L}sin(b_{13L}t+c_{13L})+a_{23L}sin(b_{23L}t+c_{23L})+a_{33L}sin(b_{33L}t+c_{33L})\nonumber\\
+    &+a_{43L}sin(b_{43L}t+c_{43L})+a_{53L}sin(b_{53L}t+c_{53L})+a_{63L}sin(b_{63L}t+c_{63L})\nonumber\\
+    &+a_{73L}sin(b_{73L}t+c_{73L})+a_{83L}sin(b_{83L}t+c_{83L}) \label{phi3}\\
+    \phi_{4}(t)&=a_{14L}sin(b_{14L}t+c_{14L})+a_{24L}sin(b_{24L}t+c_{24L})+a_{34L}sin(b_{34L}t+c_{34L})\nonumber\\
+    &+a_{44L}sin(b_{44L}t+c_{44L})+a_{54L}sin(b_{54L}t+c_{54L})+a_{64L}sin(b_{64L}t+c_{64L})\nonumber\\
+    &+a_{74L}sin(b_{74L}t+c_{74L}) \label{phi4}\\
+    \theta_{hip}(t)&=\frac{\phi_{3}(t)}{180\pi} \label{thetahip}\\
+    \theta_{knee}(t)&=\frac{\theta_{hip}(t)-\phi_{4}(t)}{180\pi} \label{thetaknee}\\
 \end{align}
-Equations \ref{sineknee} and \ref{sinehip} show the equations for calculating
-the position of each servo as a function of time. The positions of the legs are
-calculated by the PIC32 and sent to the SSC-32.
+The conversion from angle in degrees to servo position is given by the following
+equation.
+\begin{align}
+    P=\frac{\theta}{180}*2000+500
+\end{align}
+The positions of the legs are calculated by the PIC32 and sent to the SSC-32
+through the Universal Asynchronous Receiver Transmitter(UART) module of the
+PIC32. The UART is a serial connection between the PIC32 and the SSC-32. The
+calculated results are composed into a string in the form of an SSC-32 command
+and sent to the servo controller. 
 
-\subsubsection{Leg Balance Algorithm}
-%TODO: Get Yanchen's algorithms
-\paragraph{} Waiting for team member to finish simulations of control
-algorithms. Likely will use the MPU6050 to get the information about balance.
+\section{Discussion}
+\subsection{Overall System}
+\paragraph{}Currently we have components of a robotic platform prototyped and
+designed. The Robotic legs and arm are prototyped and constructed. The hand and
+feet have been designed. The basic software and control framework has been
+established. The basic I/O and control tasks have been implemented in C++ on the
+microcontroller with easy to use APIs that others can use to control the
+currently completed robot legs. Overall we are at a good position for the
+sponsor to take the foundations we have built and try to implement new different
+control algorithms and machine learning algorithms. 
 
-\subsubsection{Arm Control Algorithm}
-\paragraph{} The arms are controlled using a Fuzzy Inference System. A fuzzy
-inference system comprises of a fuzzifier, inference system, and defuzzifier.
-The fuzzyfier takes inputs and out converts them to fuzzy values of a set of
-fuzzy variables for the inference system. In this case the input is the desired
-position of the arm in 3D space. The inference system is a set of if else
-statements that determine a desired output from the fuzzy values. The
-defuzzifier then converts this output to a real output to our
-servos\cite{fuzzy2011}. To design this system we will take two approaches, one
-through simulation and one through machine learning. I will work on the Machine
-Learning approach. MATLAB has neural network algorithms that will generate fuzzy
-inference systems. To do this we will generate a dataset based on the forward
-kinematics of the robot arm, by giving it the angles of the arm joints and
-calculating the arm position as a result of the joint angles. Inputing this
-dataset into a machine learning framework in MATLAB, we can generate a simple
-fuzzy inference system to control the robotic arm\cite{fuzzymatlab}. To further
-refine the control algorithm, we will need to hand tune and simulate the fuzzy
-inference system, as well as utilize gyro, accelerometer, and IR sensors to help
-guide the arm and avoid obstacles.
+\subsection{Robot Leg}
+\paragraph{}The leg was constructed using with six servos on each leg. Three
+servos on the hip mimicked the ball and socket configuration of the human hip
+joint, which has three degrees of freedom\cite{SiasJr1990}. The three modes of
+motion are along the sagittal, frontal, and transverse planes\cite{Fiscell2005}.
+The knee has one degree of freedom, and the ankle has two degrees of freedom in
+the sagittal and frontal planes. Each leg has six degrees of freedom in total,
+this is fine for most gaits on uneven ground, but sudden changes such as steps
+would be difficult to manage\cite{SiasJr1990}. More degrees of freedom may be
+needed to obtain more human like gait\cite{SiasJr1990}.
 
-\subsubsection{Computer Vision}
-\paragraph{} To be completed\dots uses serial communication from APU to PIC32 to
-transmit desired arm coordinates.
+\paragraph{}The shins and pelvis were constructed from aluminum U channels. The
+thighs where made from aluminum cylinders, and the feet were aluminum plates.
+Figure \ref{protolegfig} shows the complete product. The SSC-32 servo controller
+was attached to the hip. A wire connects the servo controller to the power
+supply and the PIC32 controller. 
 
-\subsubsection{Control of Hand}
-\paragraph{} Not sure if implementation of hand control is needed for project.
+\begin{figure}
+  \centering
+    \includegraphics[width=0.7\textwidth,angle=270]{figures/LegPrototype.jpg}
+  \caption{Prototype leg constructed of aluminum. Total of 6 degrees of freedom
+  on each leg. The servo controller is attached to the hip}
+  \label{protolegfig}
+\end{figure}
+
+\paragraph{}We performed tests on each individual servo to determine the range
+of motion of each joint and the corresponding P values for the servo controller.
+Figure \ref{servosetupfig} shows the configuration of the servos on the leg, as
+well as their direction and range of motion in terms of SSC-32 position values.
+
+\begin{figure}
+  \centering
+    \includegraphics[width=1.0\textwidth]{figures/LegConfiguration.png}
+  \caption{Location of the servos on the leg, and the directions and ranges of
+  motion for each servo in terms of the SSC-32 position outputs}
+  \label{servosetupfig}
+\end{figure}
+
+\subsection{Firmware}
+\paragraph{}The currently completed firmware components are the serial
+communications to different devices, servo control, and accelerometer control.
+The communications channels implemented are the USB communications between the
+PIC32 and the PC, the UART connection between the PIC32 and the SSC-32 servo
+controller, and the I2C connection to the MPU6050 sensors. The I2C connection
+can be adapted to more sensors that may be added in the future for other
+devices. 
+
+\paragraph{}The servo controls are accessed through \verb!SSCServo.h! which
+contains functions and settings for controlling servo position through the
+SSC-32 controller. The MPU6050 is accessed through \verb!MPU6050.h! which
+defines memory addresses of the MPU6050 registers and functions for reading the
+output of the sensors and configuring the sensor settings. Future users of the
+robot can adapt these settings to program and prototype their own control
+algorithms.
+
+\subsection{Locomotion Controller}
+\paragraph{}Ziqi performed the simulations of the robot leg locomotion
+algorithms, and obtained the optimal parameters for equations \ref{phi3} and
+\ref{phi4}. The following are the parameters we used. Refer to Ziqi's report for
+a detailed analysis of the control system.
+\begin{verbatim}
+phi_3:           phi_4:
+a13L =   73.11;  a14L =  14.91;
+b13L =   19.69;  b14L = 0.8727;
+c13L = -0.6449;  c14L =  4.016;
+a23L =   52.58;  a24L =  1.559;
+b23L =  0.6307;  b24L =   19.4;
+c23L =   2.671;  c24L = -1.197;
+a33L =   12.35;  a34L =  27.52;
+b33L =   12.05;  b34L =  15.42;
+c33L =  -2.836;  c34L = 0.9818;
+a43L =   3.357;  a44L =  28.88;
+b43L =   29.81;  b44L =  45.43;
+c43L =  -0.797;  c44L = -5.819;
+a53L =   62.63;  a54L =  15.08;
+b53L =   20.15;  b54L =  31.49;
+c53L =   2.236;  c54L =  1.844;
+a63L =   12.04;  a64L =  1.769;
+b63L =   5.405;  b64L =  9.852;
+c63L =   3.598;  c64L = -5.219;
+a73L =   1.786;  a74L =   31.1;
+b73L =   34.76;  b74L =  45.58;
+c73L =   1.995;  c74L = -2.751;
+a83L =   1.418;
+b83L =    47.2;
+c83L =  -0.402;
+\end{verbatim}
+
+\subsection{Robot Control}
+\paragraph{}The robot is controlled through a serial connection to the computer.
+The PIC32MX795F512L is connected to the PC through the USB connection on UART
+channel 0. Commands can be passed into the robot from a serial terminal on the
+PC. Currently there are three modes of operation: Standing, Walking, and Direct
+Control. Activated by sending the strings \verb!stand!, \verb!walk!, and
+\verb!direct! through the serial terminal to the PIC32. While in stand mode, the
+robot holds a rigid upright position. Upon completion of the balancing algorithm
+begin designed by Li Yanchen, the algorithm can be implemented into the standing
+mode. While in walk mode, the robot attempts to walk according to the sine waves
+laid out by equations \ref{phi3} to \ref{thetaknee}. We are currently lacking a
+balance algorithm, which limits the walking of the robot. In direct mode, each
+servo can be commanded directly using the SSC-32 commands; in this mode all the
+commands passed to the PIC32 are redirected to the SSC-32. Servos on the right
+leg are attached to channels 0-5 on the SSC-32 and the servos on the left leg
+are on channels 16-21. Figure \ref{servosetupfig} shows the corresponding
+channels for each servo.
+
+\subsection{Other Project Subsystems}
+\subsubsection{Robot Arm}
+\paragraph{}The robot arm is built using the same structure as the leg. The
+shoulder consists of three servos mimicking a ball joint. The elbow is one
+joint, and the wrist is two servos like the ankle. Rather than using a periodic
+controller like the legs, the arm utilizes a fuzzy logic based control system.
+The system takes a desired arm position and tries to manipulate the servo
+positions to move the arm towards the location.
+
+\subsubsection{Robot Hand and SMA}
+\paragraph{}The robotic hand was designed in CAD by team member Helen Lopez. The
+robotic hand consists of five fingers with three joints each. Each joint can be
+activated and controlled through belts. The primary drive box is located in the
+wrist of the robot, and the other joints are accessed through belts. 
+
+\paragraph{}Our team could not get appreciable motion through shape memory
+alloy. Electrical activation of the SMA could not be used to control the motion
+we needed in the hand. More testing will need to be done to generate data for
+the SMA actuation.
+
+\section{Conclusion}
+\paragraph{}Currently the robot has legs and arms that can be used as testing
+platforms for various algorithms. Future groups can utilize this robotic
+platform as a foundation for developing more complex control systems and
+artificial intelligence software. The overall vision laid out by the our
+industry adviser at the beginning of the project was of a humanoid robot that
+has advanced locomotion capabilities such as running and jumping and advanced
+vision and hand manipulation capabilities. The goal for our group was to build
+the foundations of this robot. We have successfully prototyped the simpler
+components like the leg and arm, and we have laid the software foundations for
+the control system and computer vision system. It would be easy for future teams
+to build on the software and hardware we have to complete the vision of our
+sponsor.
+
+\paragraph{}More testing and simulations need to be done to finish the control
+systems of the robot. The control of the balance still needs to be worked on to
+complete the standing and walking of our robot. More degrees of freedom can also
+be added to implement more human like motions. Once that is completed more work
+can be done to push it beyond the state of the art, by implementing complex
+motions such as bipedal running. The vision system needs to be completed and
+interfaced to the robot arm, so the vision can be used to guide the arm's
+motions. We faced difficulties in the mechanical design of the hand with the
+constraints of size and weight, especially in implementing SMA into the design,
+so more work and testing need to be done in this area.
+
+\paragraph{}The areas of advanced robotic locomotion, computer vision, and
+advanced humanoid hand and feet design are all great areas for the sponsor Bay
+Area IP to explore IP opportunities. These technologies can bring many benefits
+to areas such as manufacturing and prosthetics.
 
 \printbibliography
 
