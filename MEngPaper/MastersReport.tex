@@ -365,14 +365,14 @@ joint, which has three degrees of freedom\cite{SiasJr1990}. The three modes of
 motion are along the sagittal, frontal, and transverse planes\cite{Fiscell2005}.
 The knee has one degree of freedom, and the ankle has two degrees of freedom in
 the sagittal and frontal planes. Each leg has six degrees of freedom in total,
-this is fine for most gaits on uneven ground, but sudden changes such as steps
-would be difficult to manage\cite{SiasJr1990}. More degrees of freedom may be
-needed to obtain more human like gait\cite{SiasJr1990}.
+this is fine for most gaits on uneven ground, but more complex terrain may be 
+difficult to manage; More degrees of freedom may be needed to obtain more human
+like gait on difficult to traverse terrains\cite{SiasJr1990}.
 
 \paragraph{}The shins and pelvis were constructed from aluminum U channels. The
 thighs where made from aluminum cylinders, and the feet were aluminum plates.
 Figure \ref{protolegfig} shows the complete product. The SSC-32 servo controller
-was attached to the hip. A wire connects the servo controller to the power
+was attached to the hip. A tether connects the servo controller to the power
 supply and the PIC32 controller. 
 
 \begin{figure}
@@ -398,12 +398,12 @@ well as their direction and range of motion in terms of SSC-32 position values.
 
 \subsection{Firmware}
 \paragraph{}The currently completed firmware components are the serial
-communications to different devices, servo control, and accelerometer control.
-The communications channels implemented are the USB communications between the
-PIC32 and the PC, the UART connection between the PIC32 and the SSC-32 servo
-controller, and the I2C connection to the MPU6050 sensors. The I2C connection
-can be adapted to more sensors that may be added in the future for other
-devices. 
+communications to different devices, servo control, and accelerometer/gyro
+control.  The communications channels implemented are the USB communications
+between the PIC32 and the PC, the UART connection between the PIC32 and the
+SSC-32 servo controller, and the I2C connection to the MPU6050 sensors. The I2C
+connection can be adapted to more sensors that may be added in the future for
+other devices. 
 
 \paragraph{}The servo controls are accessed through \verb!SSCServo.h! which
 contains functions and settings for controlling servo position through the
@@ -452,7 +452,7 @@ The PIC32MX795F512L is connected to the PC through the USB connection on UART
 channel 0. Commands can be passed into the robot from a serial terminal on the
 PC. Currently there are three modes of operation: Standing, Walking, and Direct
 Control. Activated by sending the strings \verb!stand!, \verb!walk!, and
-\verb!direct! through the serial terminal to the PIC32. While in stand mode, the
+\verb!direct! through a serial terminal to the PIC32. While in stand mode, the
 robot holds a rigid upright position. While in walk mode, the robot attempts to
 walk according to the sine waves laid out by equations \ref{phi3} to
 \ref{thetaknee}. In direct mode, each servo can be commanded directly using
@@ -463,8 +463,8 @@ on the SSC-32 and the servos on the left leg are on channels 16-21. Figure
 
 \paragraph{}Currently we do not have a proper power supply for testing the
 walking algorithm. The Yihua DC power supply shown in figure \ref{yihuafig} only
-has 2A output, which is insufficient for powering the 12 servos on the leg. The
-EOS VLT100-4002(figure \ref{vltfig}) only has 5V output which isn't sufficient
+has 2A output, which is insufficient for powering all 12 servos on the legs. The
+EOS VLT100-4002 (Figure \ref{vltfig}) only has 5V output which isn't sufficient
 for the servos. We are currently waiting on some parts from our sponsor in order
 to boost the voltage output of the VLT to suitable levels. However, Ziqi's
 simulations show that the algorithm is functional. Once we have the power supply
@@ -505,15 +505,14 @@ to build on the software and hardware we have to complete the vision of our
 sponsor.
 
 \paragraph{}More testing and simulations need to be done to finish the control
-systems of the robot. The control of the balance still needs to be worked on to
-complete the standing and walking of our robot. More degrees of freedom can also
-be added to implement more human like motions. Once that is completed more work
-can be done to push it beyond the state of the art, by implementing complex
-motions such as bipedal running. The vision system needs to be completed and
-interfaced to the robot arm, so the vision can be used to guide the arm's
-motions. We faced difficulties in the mechanical design of the hand with the
-constraints of size and weight, especially in implementing SMA into the design,
-so more work and testing need to be done in this area.
+systems of the robot. More degrees of freedom can also be added to implement
+more human like motions. Once that is completed more work can be done to push it
+beyond the state of the art, by implementing complex motions such as bipedal
+running. The vision system needs to be completed and interfaced to the robot
+arm, so the vision can be used to guide the arm's motions. We faced difficulties
+in the mechanical design of the hand with the constraints of size and weight,
+especially in implementing SMA into the design, so more work and testing need to
+be done in this area.
 
 \paragraph{}The areas of advanced robotic locomotion, computer vision, and
 advanced humanoid hand and feet design are all great areas for the sponsor Bay
