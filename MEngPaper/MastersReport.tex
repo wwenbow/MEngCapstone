@@ -2,7 +2,7 @@
 %     Created: Sun Mar 02 03:00 PM 2014 P
 % Last Change: Sun Mar 02 03:00 PM 2014 P
 %
-\documentclass[letterpaper,12pt]{report}
+\documentclass[titlepage,letterpaper,12pt]{article}
 \usepackage[sorting=none,backend=bibtex]{biblatex}
 \usepackage{fullpage}
 \usepackage{hyperref}
@@ -12,7 +12,7 @@
 \usepackage{graphicx}
 \usepackage[font=small,labelfont=bf]{caption}
 %\usepackage[doublespacing]{setspace}
-%\usepackage[onehalfspacing]{setspace}
+\usepackage[onehalfspacing]{setspace}
 \addbibresource{CapstoneCitations.bib}
 
 \pagestyle{plain}
@@ -38,6 +38,9 @@ system for the robot platform, as well as summarizing the other subsystems
 worked on by the team.
 \end{abstract}
 
+\tableofcontents
+\clearpage
+
 \section{Introduction}
 \paragraph{}Robots are being widely adopted by in many industries, and there is
 a growing need for humanoid robotics. Humanoid robotic components can have many
@@ -57,6 +60,16 @@ capabilities through software is also a great challenges. It is difficult to
 design and implement complex control systems capable of mimicking the human
 body. New computer hardware is allowing us to create more complex robots capable
 of performing human like tasks.
+
+\paragraph{}Our sponsor, Bay Area IP, envisions three main components to the
+robot: a computer vision system, a complex humanoid robotic hand, and a high
+performance bipedal locomotion system. The hand would be a light weight and have
+a high degree of freedom. The computer vision system will recognize objects in
+real time and guide the robotic arm towards the object and guide the hand for
+grasping. The robotic legs will be able to perform complex gaits and high speed
+motions such as running. The role of our team is to lay the foundations for
+these three systems, and try to do as much as we can do complete these three
+subsystems.
 
 \paragraph{}The subsystems we designed were the arms, hands, legs, feet, and
 vision systems.  We designed the mechanical structure of these components and
@@ -159,7 +172,7 @@ combines the outputs into an analog output\cite{Mailah2000}.
 
 \section{Materials and Methods}
 \subsection{Materials}
-\paragraph{PIC32MX795F512L:}A 32 bit micro-controller for performing the control
+\paragraph{PIC32MX795F512L}A 32 bit micro-controller for performing the control
 algorithms of the robot. The PIC32MX795F512L comes from SparkFun electronics as
 part of the UBW32 board, which comes preloaded with a bootloader for programming
 the board. See figure \ref{ubw32fig} for an image of the UBW32 board. The
@@ -176,7 +189,7 @@ board\cite{pic32data}.
   \label{ubw32fig}
 \end{figure}
 
-\paragraph{PICKIT3:}A hardware programmer for the PIC32MX795F512L
+\paragraph{PICKIT3}A hardware programmer for the PIC32MX795F512L
 microprocessor. See figure \ref{pickit3fig}. The pickit3 and program and debug
 the PIC32 micro-controller.  Used to download code onto the UBW32. Useful for
 installing new bootloaders onto the UBW32 and for restoring broken
@@ -189,7 +202,7 @@ firmware\cite{pickitdata}.
   \label{pickit3fig}
 \end{figure}
 
-\paragraph{MPU6050:}A gyro and accelerometer for obtaining information about the
+\paragraph{MPU6050}A gyro and accelerometer for obtaining information about the
 kinematics of the arm and the leg. See figure \ref{mpufig}. Uses I2C connection
 to the PIC32MX795F512L for communication\cite{mpu6050data}.
 
@@ -200,7 +213,7 @@ to the PIC32MX795F512L for communication\cite{mpu6050data}.
   \label{mpufig}
 \end{figure}
 
-\paragraph{HSR-5498SG:}Servos from Hitec. Utilized to control arm and leg
+\paragraph{HSR-5498SG}Servos from Hitec. Utilized to control arm and leg
 joints. See figure \ref{hsrfig}. The servos require 6-7 Volts. Each servo
 requires at least 200mA when running without load, and over 1A when stalled.
 The actuation of the arm is accomplished by mini-motors rather than
@@ -213,7 +226,7 @@ servos\cite{sscdata}.
   \label{hsrfig}
 \end{figure}
 
-\paragraph{SSC-32:}Servo controller from Lynx motion. The on-board controller is
+\paragraph{SSC-32}Servo controller from Lynx motion. The on-board controller is
 an Atmega168-20PU. See figure \ref{sscfig}. The SSC-32 is controlled using
 serial signals from another microprocessor or the PC. The control signal is a
 simple byte stream. The controller can specify pin number, servo position,
@@ -440,16 +453,22 @@ channel 0. Commands can be passed into the robot from a serial terminal on the
 PC. Currently there are three modes of operation: Standing, Walking, and Direct
 Control. Activated by sending the strings \verb!stand!, \verb!walk!, and
 \verb!direct! through the serial terminal to the PIC32. While in stand mode, the
-robot holds a rigid upright position. Upon completion of the balancing algorithm
-begin designed by Li Yanchen, the algorithm can be implemented into the standing
-mode. While in walk mode, the robot attempts to walk according to the sine waves
-laid out by equations \ref{phi3} to \ref{thetaknee}. We are currently lacking a
-balance algorithm, which limits the walking of the robot. In direct mode, each
-servo can be commanded directly using the SSC-32 commands; in this mode all the
-commands passed to the PIC32 are redirected to the SSC-32. Servos on the right
-leg are attached to channels 0-5 on the SSC-32 and the servos on the left leg
-are on channels 16-21. Figure \ref{servosetupfig} shows the corresponding
-channels for each servo.
+robot holds a rigid upright position. While in walk mode, the robot attempts to
+walk according to the sine waves laid out by equations \ref{phi3} to
+\ref{thetaknee}. In direct mode, each servo can be commanded directly using
+the SSC-32 commands; in this mode all the commands passed to the PIC32 are
+redirected to the SSC-32. Servos on the right leg are attached to channels 0-5
+on the SSC-32 and the servos on the left leg are on channels 16-21. Figure
+\ref{servosetupfig} shows the corresponding channels for each servo.
+
+\paragraph{}Currently we do not have a proper power supply for testing the
+walking algorithm. The Yihua DC power supply shown in figure \ref{yihuafig} only
+has 2A output, which is insufficient for powering the 12 servos on the leg. The
+EOS VLT100-4002(figure \ref{vltfig}) only has 5V output which isn't sufficient
+for the servos. We are currently waiting on some parts from our sponsor in order
+to boost the voltage output of the VLT to suitable levels. However, Ziqi's
+simulations show that the algorithm is functional. Once we have the power supply
+ready we can perform more tests on the entire system.
 
 \subsection{Other Project Subsystems}
 \subsubsection{Robot Arm}
@@ -501,6 +520,7 @@ advanced humanoid hand and feet design are all great areas for the sponsor Bay
 Area IP to explore IP opportunities. These technologies can bring many benefits
 to areas such as manufacturing and prosthetics.
 
+\clearpage
 \printbibliography
 
 \end{document}
