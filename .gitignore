@@ -13,3 +13,5 @@
 *.bak
 *-blx.bib
 *.tex~
+*.lof
+*.toc
