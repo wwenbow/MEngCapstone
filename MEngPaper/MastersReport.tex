@@ -82,12 +82,12 @@ then implemented in C++ on a microcontroller. The computer vision system was
 implemented on an AMD APU, and utilized a novel laser system to augment the
 computer vision algorithms.
 
-\paragraph{}I was responsible for the construction of the mechanical arm, leg,
-and the programming of the microcontroller. We implemented a simple control
-algorithm for robot walking. This report will describe the materials and methods
-used to construct the arms, and legs, as well as the programming of the
-microcontroller for basic control of the robot. I will also give an overview of
-the other components of the project.
+\paragraph{}I was responsible for the programming of the microcontroller, as
+well as supporting the design and construction of the prototype arm and leg. We
+implemented a simple control algorithm for robot walking. This report will
+describe the materials and methods used to construct the arms, and legs, as well
+as the programming of the microcontroller for basic control of the robot. I will
+also give an overview of the other components of the project.
 
 \section{Literature Review}
 \subsection{Computer Vision}
@@ -104,7 +104,7 @@ image\cite{Dalal2005}.
 as they often need to scan the image multiple times at different resolutions to
 find all the objects\cite{Felzenszwalb2013}. This can be a very expensive
 process on an embedded system such as the robot. In a cluttered space it can be
-very difficult to detect robots correctly in real time. On a robotic system
+very difficult to detect objects correctly in real time. On a robotic system
 there usually exist other sensors that can supplement the visual information to
 help ease this process. Utilization of depth sensors can help process the visual
 information more easily\cite{Gould2008}.
@@ -143,7 +143,7 @@ current\cite{Ikuta1990}. This actuation can be used in the fingers of the hand
 Generators (CPG). Central pattern generators are neural networks that generate
 periodic control signals in the body. This control can be generated in the
 absence of feedback signals. The human body utilizes this
-system for many different rythmic motor functions that the body needs to
+system for many different rhythmic motor functions that the body needs to
 perform\cite{cpggeneral}. 
 
 \paragraph{}Central pattern generator can also be adapted to the locomotion of
@@ -156,10 +156,11 @@ well understood and difficult to design properly\cite{Ijspeert2008}.
 
 \subsection{Robot Arm}
 \paragraph{}For the controls of our robot arm we will be implementing Fuzzy
-Logic control systems. These control systems can handle nonlinearities well they
-are well studied for control of robotic systems such as arms\cite{Scharf1985}.
-Fuzzy logic controllers can also be used to control balance of the robotic legs,
-treating the legs as an inverted pendulum\cite{hwang1992stability}.
+Logic control systems. These control systems can handle nonlinearities well, and
+they are well studied for control of robotic systems such as
+arms\cite{Scharf1985}.  Fuzzy logic controllers can also be used to control
+balance of the robotic legs, treating the legs as an inverted
+pendulum\cite{hwang1992stability}.
 
 \paragraph{}Rather than using complex models, a fuzzy logic controller relies on
 empirical rules, this makes the controller computationally cheap and well suited
@@ -168,7 +169,6 @@ fuzzifier, a rule base, and an defuzzifier. In the fuzzifier, analog inputs are
 fuzzified into fuzzy logic values between 0 and 1. The fuzzy values are put into
 the rule base to determine a set of fuzzy outputs, and then the defuzzifier
 combines the outputs into an analog output\cite{Mailah2000}.
-
 
 \section{Materials and Methods}
 \subsection{Materials}
@@ -229,8 +229,8 @@ servos\cite{sscdata}.
 \paragraph{SSC-32}Servo controller from Lynx motion. The on-board controller is
 an Atmega168-20PU. See figure \ref{sscfig}. The SSC-32 is controlled using
 serial signals from another microprocessor or the PC. The control signal is a
-simple byte stream. The controller can specify pin number, servo position,
-rotation speed, and rotation time. It can power 32 servos
+string containing a series of commands. The controller can specify pin number,
+servo position, rotation speed, and rotation time. It can power 32 servos
 simultaneously\cite{servodata}.
 
 \begin{figure}
@@ -263,10 +263,10 @@ simultaneously\cite{servodata}.
 \subsection{Methods}
 \subsubsection{Microcontroller Setup}
 \paragraph{}To program the PIC32MX795F512L, we used the Multi-Platform
-Integrated Development Environment(MPIDE) environment from chipKIT. To use MPIDE
+Integrated Development Environment(MPIDE) from chipKIT. To use MPIDE
 with the program, we had to program the PIC32 with the avrdude bootloader found
 here: \url{https://github.com/chipKIT32/PIC32-avrdude-bootloader}. Using the
-pickit3, we loaded the new bootloader onto the UBW32 and was able to use MPIDE
+PICkit3, we loaded the new bootloader onto the UBW32 and was able to use MPIDE
 to program the board. MPIDE utilizes the Arduino libraries and Arduino style C++
 code for programming the board. Through MPIDE, there are a wide variety of
 libraries available for performing basic I/O tasks using the PIC32.
@@ -339,7 +339,7 @@ of the knee is relative to the axis along the thigh of the robot.
 The conversion from angle in degrees to servo position is given by the following
 equation.
 \begin{align}
-    P=\frac{\theta}{180}*2000+500
+    P=\frac{\theta}{90}*1000+1500
 \end{align}
 The positions of the legs are calculated by the PIC32 and sent to the SSC-32
 through the Universal Asynchronous Receiver Transmitter(UART) module of the
@@ -351,11 +351,11 @@ and sent to the servo controller.
 \subsection{Overall System}
 \paragraph{}Currently we have components of a robotic platform prototyped and
 designed. The Robotic legs and arm are prototyped and constructed. The hand and
-feet have been designed. The basic software and control framework has been
-established. The basic I/O and control tasks have been implemented in C++ on the
-microcontroller with easy to use APIs that others can use to control the
+feet have been designed in CAD, and The basic software and control framework has
+been established. The basic I/O and control tasks have been implemented in C++
+on the microcontroller with easy to use APIs that others can use to control the
 currently completed robot legs. Overall we are at a good position for the
-sponsor to take the foundations we have built and try to implement new different
+sponsor to take the foundations we have built and try to implement different
 control algorithms and machine learning algorithms. 
 
 \subsection{Robot Leg}
