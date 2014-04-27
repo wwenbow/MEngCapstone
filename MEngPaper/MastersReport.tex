@@ -510,8 +510,24 @@ positions. The leg has 12 servos in total, most of large motions will be in the
 four hip and knee joints, while the other joints will be responsible for smaller
 motions to balance the robot. The arms are of similar construction, but the
 elbow and shoulder joints would be responsible for a even larger load of lifting
-the arms in air. Ideally we want to be able to supply 28.8A of current to
-satisfy the maximum requirement of the servos.
+the arms in air. 
+
+\paragraph{}Ideally we want to be able to supply 28.8A of current to
+satisfy the maximum requirement of the servos. We can opt for a high current
+power supply such as a BK Precision Model 1796, which can supply 0-16V and 0-50A
+which will be enough for our applications \cite{bkpowerdata}. However such
+supplies are probably too bulky to be put on to the robot chassis, so the robot
+will need to be tethered to the table supply. We can also boost the voltage out
+put of the VLT100, the 12A output is probably sufficient for the controlling the
+legs or the arms, so we may need two supplies for the whole robot. The VLT100 is
+small enough to attach to the robot, but it needs to be attached to tethered to
+the wall supply. We can also use batteries to power the robot. The BP13-6 S for
+BB Battery Co. has 6V output and a 30A maximum discharge, and the battery is
+rechargeable \cite{batterydata}. The battery has the advantage of being mobile
+and can remove the necessity of tethering the robot, though the battery is
+fairly heavy at 5.5lb \cite{batterydata}. To fully free the robot from the
+tether, we will also need to replace the wired USB connection with wireless
+communication.
 
 \section{Conclusion}
 \paragraph{}Currently the robot has legs and arms that can be used as testing
