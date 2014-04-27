@@ -82,12 +82,40 @@ then implemented in C++ on a microcontroller. The computer vision system was
 implemented on an AMD APU, and utilized a novel laser system to augment the
 computer vision algorithms.
 
-\paragraph{}I was responsible for the programming of the microcontroller, as
-well as supporting the design and construction of the prototype arm and leg. We
-implemented a simple control algorithm for robot walking. This report will
-describe the materials and methods used to construct the arms, and legs, as well
-as the programming of the microcontroller for basic control of the robot. I will
-also give an overview of the other components of the project.
+\paragraph{}To control our robot, we utilized a powerful 32 bit microprocessor,
+the PIC32MX795F512L which allows us to perform complex calculations in real time
+\cite{pic32data}. This allows the robot to perform complex computer vision tasks
+and control algorithms. With the PIC32 as the foundation I built the firmware
+for the robot, implementing the fundamental sensory and motor controls of the
+humanoid robot. The first step was to implement the necessary communication
+protocols to connect the PIC32 with the other software components: I2C to
+integrate other integrated circuit chips, USB to communicate with the PC, and
+UART to communicate with other controllers. These systems cover nearly the full
+spectrum of communication protocols used by common ICs and components used for
+embedded software and robotics applications, and they allow us to easily
+integrate new components and features into the robot hardware.
+
+\paragraph{}The motor functions of the robot are mainly governed by a collection
+of servos on the arms and legs. To control the servos, I utilized the SSC-32
+servo controller, a powerful controller capable of synchronizing the motions of
+32 servos at the same time \cite{sscdata}. A single SSC-32, controlled through a
+serial UART connection, would be able to control the motions of the arm and legs
+and synchronize them with millisecond precision.  The sensory information
+currently consists of accelerometer and gyro readings from the MPU6050. The
+MPU6050 is connected through an I2C connection, and it consists of a 3-axis gyro
+and a 3-axis accelerometer, as well as temperature sensors. The MPU6050 can also
+be connected to other sensors such as magnetometers \cite{mpu6050data}. The
+MPU6050 can be placed on the arms and legs to generate sensory feedback for
+controlling the motions of the legs and arms.
+
+\paragraph{}The team completed the bipedal legs of the robot, and I was able to
+test the controller on the bipedal system. The control of walking was based on a
+linear combination of different sine waves which governed the periodic motion of
+the legs. I calibrated the legs so the motion was smooth and quick. However, due
+to power supply issues we could not get the robot to walk properly. The power
+supplies we had were not able to control the simultaneous motion of 12 servos,
+which had support the load of heavy robotic legs. The next step for the robot
+will be to get a power supply capable of supporting the many servos on the robot.
 
 \section{Literature Review}
 \subsection{Computer Vision}
