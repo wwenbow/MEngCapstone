@@ -446,7 +446,6 @@ b83L =    47.2;
 c83L =  -0.402;
 \end{verbatim}
 
-\subsection{Robot Control}
 \paragraph{}The robot is controlled through a serial connection to the computer.
 The PIC32MX795F512L is connected to the PC through the USB connection on UART
 channel 0. Commands can be passed into the robot from a serial terminal on the
@@ -461,34 +460,58 @@ redirected to the SSC-32. Servos on the right leg are attached to channels 0-5
 on the SSC-32 and the servos on the left leg are on channels 16-21. Figure
 \ref{servosetupfig} shows the corresponding channels for each servo.
 
-\paragraph{}Currently we do not have a proper power supply for testing the
-walking algorithm. The Yihua DC power supply shown in figure \ref{yihuafig} only
-has 2A output, which is insufficient for powering all 12 servos on the legs. The
-EOS VLT100-4002 (Figure \ref{vltfig}) only has 5V output which isn't sufficient
-for the servos. We are currently waiting on some parts from our sponsor in order
-to boost the voltage output of the VLT to suitable levels. However, Ziqi's
-simulations show that the algorithm is functional. Once we have the power supply
-ready we can perform more tests on the entire system.
+\subsection{System Analysis}
+\paragraph{}The controller runs performs simple round robin scheduling when
+calculating servo outputs. It looks at each servo in order and calculates the
+correct output. The final command is composed from the servo outputs and sent as
+a single synchronized motion command to the SSC-32. The execution speed of the
+round robin loop is determined in the code. To get smooth motions in the joints,
+we needed to calibrate the timing of the commands sent to the SSC-32. Currently
+we are utilizing a 100ms time step for the position calculations, and we found
+that approximately 90ms update time is sufficient for smooth motions. We
+calculate the necessary position of the servos and construct the command and
+send the command to the SSC-32 in 90ms. Currently we have 12 servos, and each
+servo requires around 8 bytes of data to be sent.  The PIC32 runs at 80Mhz, so
+it is sufficient for our current configuration \cite{pic32data}. The serial
+transfer rate can be limiting since the SSC-32 requires a long string encoding
+the positions of all the servos that need to be moved, and each servo needs a
+string of 8 characters, with 12 servos on the legs and 12 servos on the arms
+that is 1536 bits of information that needs to sent every time step. However the
+SSC-32 has a maximum baud rate of 115.2kbps, so we cant send that information in
+approximately 13ms \cite{sscdata}. Equation \ref{transfertime} shows the bit
+rate calculations.
+\begin{align}
+    t_{serial} &= \frac{n_{servos} * \frac{8 bytes}{servo} * \frac{8 bits}{byte}}
+        {115.2 kbps} \label{transfertime}
+\end{align}
+The maximum update speed for the SSC-32 is 20ms, so that is the main performance
+limiter \cite{lynxmaxspeed}.  The 20ms limit should be fine for most motions,
+since 20ms is faster than most human knee motions
+\cite{williamson2001detecting}. However, having a faster update rate will
+increase the resolution of the motion and achieve a more human like gait.The
+SSC-32 is controlled by a Atmel ATMEGA168-20PU, which is a 8-bit 20Mhz
+microcontroller \cite{Atmega168data}. To increase performance, we may be able
+to shift the servo control to the PIC32, which is a much faster microcontroller,
+and we would not need the serial communications between the PIC32 and the
+SSC-32, but that would require more complicated task scheduling to synchronize
+the servo movements.
 
-\subsection{Other Project Subsystems}
-\subsubsection{Robot Arm}
-\paragraph{}The robot arm is built using the same structure as the leg. The
-shoulder consists of three servos mimicking a ball joint. The elbow is one
-joint, and the wrist is two servos like the ankle. Rather than using a periodic
-controller like the legs, the arm utilizes a fuzzy logic based control system.
-The system takes a desired arm position and tries to manipulate the servo
-positions to move the arm towards the location.
-
-\subsubsection{Robot Hand and SMA}
-\paragraph{}The robotic hand was designed in CAD by team member Helen Lopez. The
-robotic hand consists of five fingers with three joints each. Each joint can be
-activated and controlled through belts. The primary drive box is located in the
-wrist of the robot, and the other joints are accessed through belts. 
-
-\paragraph{}Our team could not get appreciable motion through shape memory
-alloy. Electrical activation of the SMA could not be used to control the motion
-we needed in the hand. More testing will need to be done to generate data for
-the SMA actuation.
+\paragraph{}Currently, the motion of the legs is restricted due to lack of
+proper power supply to the robot. Currently we only have two power supplies, the
+Yihua 1502DD and the VLT100, neither of which is suitable for the task of
+powering the entire bipedal system. Currently the Yihua can support full control
+of a single joint with great reliability. The datasheet of the servos list the
+stall current as 1.2A and the no load current as 200mA. Through testing we see
+that actuating a single knee servo to lift the leg requires over 1A of current.
+The Yihua has a maximum load of 2A, which cannot support motion of the robot.
+Testing with the VLT100 which is a 5V 3-12A power supply also proved useless.
+The power supply could no reliably lift the legs of the robot and hold their
+positions. The leg has 12 servos in total, most of large motions will be in the
+four hip and knee joints, while the other joints will be responsible for smaller
+motions to balance the robot. The arms are of similar construction, but the
+elbow and shoulder joints would be responsible for a even larger load of lifting
+the arms in air. Ideally we want to be able to supply 28.8A of current to
+satisfy the maximum requirement of the servos.
 
 \section{Conclusion}
 \paragraph{}Currently the robot has legs and arms that can be used as testing
