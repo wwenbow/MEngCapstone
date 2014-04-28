@@ -111,13 +111,58 @@ controlling the motions of the legs and arms.
 \paragraph{}The team completed the bipedal legs of the robot, and I was able to
 test the controller on the bipedal system. The control of walking was based on a
 linear combination of different sine waves which governed the periodic motion of
-the legs. I calibrated the legs so the motion was smooth and quick. However, due
-to power supply issues we could not get the robot to walk properly. The power
-supplies we had were not able to control the simultaneous motion of 12 servos,
-which had support the load of heavy robotic legs. The next step for the robot
-will be to get a power supply capable of supporting the many servos on the robot.
+the legs. The report describes the detailed design of the firmware and the
+robotic legs on which the firmware was tested, as well as the challenges we
+faced and our recommendations to the sponsor for moving forward with the
+project.
 
 \section{Literature Review}
+\subsection{Robot Software Frameworks}
+\paragraph{}The software for the robotics industry is mostly made of code custom
+tailored to specific hardware and specific industries, unlike traditional PC
+software which tend to be multi-platform and independent of the underlying hardware.
+Some reasons for this are the relative youth of this industry and the very
+specific niches that robotics manufacturers fill. Many robots are designed for
+specific manufacturing and assembly purposes, where the customers are large
+corporations willing to pay high prices for these robots. Corporations are
+usually seeking reliability in their manufacturing robots, so custom tailoring
+the code for specific hardware has much greater benefits than sacrificing
+performance for portability. Comparatively, hobbyists and researchers seeking
+multi-platform and easy to use software is a much smaller segment
+\cite{jang2010opros}.
+
+\paragraph{}As robots are becoming more complex and difficult to program, many
+individuals have tried to create software frameworks to ease the process
+\cite{quigley2009ros}. Easy to use software can be a main selling point for some
+robots; the Baxter robot from Rethink Robotics lists ease of programming as one
+of it's key features \cite{baxterdata}. One framework is the ROS which is a
+Robotic Operating System, which implements some of the features you would find
+in a traditional operating system in order to facilitate development of robot
+software. The ROS is open source, free, and language independent, meaning that
+it can be used with many different programming languages. The ROS is structured
+around libraries and drivers like a normal OS, so the programmer and write their
+code to be portable to many different hardware systems, like a software for a PC
+\cite{quigley2009ros}.
+
+\paragraph{}Another framework is the Miro developed by Utz et al., which
+uses a object oriented paradigm. The Miro, like the ROS, is
+open source. Miro implements all the basic fundamentals of object oriented
+software, such as information hiding, abstractions, polymorphism, and
+inheritance. The Miro provides a familiar framework that hides the details of
+the underlying hardware from the programmer \cite{utz2002miro}.
+
+\paragraph{}The framework we will be using is the Multi-Platform Integrated
+Development Environment (MPIDE). This framework is a microprocessor programming
+framework designed to work for many different microprocessors. The MPIDE is
+based on the Arduino framework, which is based on C++. This is a very popular
+framework for programming microcontrollers since it offers a simple API
+abstraction for the complex microprocessor hardware. Being based on C++ is
+offers a object oriented programming pattern like the Miro. The Arduino
+framework on which MPIDE is based has a large community of enthusiasts offering
+a strong base of support and software libraries. The MPIDE has the ease of use
+of the Arduino while also supporting a larger variety of much faster
+microprocessors \cite{anderson2013using}.
+
 \subsection{Computer Vision}
 \paragraph{}Object detection has been well studied in a variety of applications.
 Many machine learning algorithms are utilized for object detection such as
@@ -398,10 +443,11 @@ difficult to manage; More degrees of freedom may be needed to obtain more human
 like gait on difficult to traverse terrains\cite{SiasJr1990}.
 
 \paragraph{}The shins and pelvis were constructed from aluminum U channels. The
-thighs where made from aluminum cylinders, and the feet were aluminum plates.
-Figure \ref{protolegfig} shows the complete product. The SSC-32 servo controller
-was attached to the hip. A tether connects the servo controller to the power
-supply and the PIC32 controller. 
+thighs where made from aluminum cylinders, and the feet were aluminum plates
+(Figure \ref{protolegfig}). The SSC-32 servo controller was attached to the hip.
+A tether connects the servo controller to the power supply and the PIC32
+controller. Figure \ref{servosetupfig} shows the configuration of the servos on the leg, as
+well as their direction and range of motion in terms of SSC-32 position values.
 
 \begin{figure}
   \centering
@@ -410,11 +456,6 @@ supply and the PIC32 controller.
   on each leg. The servo controller is attached to the hip}
   \label{protolegfig}
 \end{figure}
-
-\paragraph{}We performed tests on each individual servo to determine the range
-of motion of each joint and the corresponding P values for the servo controller.
-Figure \ref{servosetupfig} shows the configuration of the servos on the leg, as
-well as their direction and range of motion in terms of SSC-32 position values.
 
 \begin{figure}
   \centering
