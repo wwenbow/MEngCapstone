@@ -122,7 +122,7 @@ project.
 tailored to specific hardware and specific industries, unlike traditional PC
 software which tend to be multi-platform and independent of the underlying hardware.
 Some reasons for this are the relative youth of this industry and the very
-specific niches that robotics manufacturers fill. Many robots are designed for
+specific niches that robots manufacturers fill. Many robots are designed for
 specific manufacturing and assembly purposes, where the customers are large
 corporations willing to pay high prices for these robots. Corporations are
 usually seeking reliability in their manufacturing robots, so custom tailoring
@@ -156,11 +156,11 @@ Development Environment (MPIDE). This framework is a microprocessor programming
 framework designed to work for many different microprocessors. The MPIDE is
 based on the Arduino framework, which is based on C++. This is a very popular
 framework for programming microcontrollers since it offers a simple API
-abstraction for the complex microprocessor hardware. Being based on C++ is
-offers a object oriented programming pattern like the Miro. The Arduino
-framework on which MPIDE is based has a large community of enthusiasts offering
-a strong base of support and software libraries. The MPIDE has the ease of use
-of the Arduino while also supporting a larger variety of much faster
+abstraction for the complex microprocessor hardware. Being based on C++, the
+MPIDE offers a object oriented programming pattern like the Miro. The Arduino
+framework, on which MPIDE is based, has a large community of enthusiasts
+offering a strong base of support and software libraries. The MPIDE has the ease
+of use of the Arduino while also supporting a larger variety of much faster
 microprocessors \cite{anderson2013using}.
 
 \subsection{Computer Vision}
@@ -530,43 +530,45 @@ on the SSC-32 and the servos on the left leg are on channels 16-21. Figure
 \ref{servosetupfig} shows the corresponding channels for each servo.
 
 \subsection{System Analysis}
-\paragraph{}The controller runs performs simple round robin scheduling when
+\paragraph{}The controller performs simple round robin scheduling when
 calculating servo outputs. It looks at each servo in order and calculates the
 correct output. The final command is composed from the servo outputs and sent as
 a single synchronized motion command to the SSC-32. The execution speed of the
 round robin loop is determined in the code. To get smooth motions in the joints,
 we needed to calibrate the timing of the commands sent to the SSC-32. Currently
 we are utilizing a 100ms time step for the position calculations, and we found
-that approximately 90ms update time is sufficient for smooth motions. We
-calculate the necessary position of the servos and construct the command and
-send the command to the SSC-32 in 90ms. Currently we have 12 servos, and each
-servo requires around 8 bytes of data to be sent.  The PIC32 runs at 80Mhz, so
-it is sufficient for our current configuration \cite{pic32data}. The serial
-transfer rate can be limiting since the SSC-32 requires a long string encoding
-the positions of all the servos that need to be moved, and each servo needs a
-string of 8 characters, with 12 servos on the legs and 12 servos on the arms
-that is 1536 bits of information that needs to sent every time step. However the
-SSC-32 has a maximum baud rate of 115.2kbps, so we cant send that information in
-approximately 13ms \cite{sscdata}. Equation \ref{transfertime} shows the bit
-rate calculations.
+that approximately 90ms update time is sufficient for smooth motions. To smooth
+out the motions, the update time needs to be shorter than the motion time
+programmed into the SSC-32.  We calculate the necessary position of the servos
+and construct the command and send the command to the SSC-32 in 90ms. Currently
+we have 12 servos, and each servo requires around 8 bytes of data to be sent.
+The PIC32 runs at 80Mhz, so it is sufficient for our current configuration
+\cite{pic32data}. The serial transfer rate can be limiting since the SSC-32
+requires a long string encoding the positions of all the servos that need to be
+moved, and each servo needs a string of 8 characters, with 12 servos on the legs
+and 12 servos on the arms that is 1536 bits of information that needs to sent
+every time step. However the SSC-32 has a maximum baud rate of 115.2kbps, so we
+cant send that information in approximately 13ms \cite{sscdata}. Equation
+\ref{transfertime} shows the bit rate calculations.
 \begin{align}
     t_{serial} &= \frac{n_{servos} * \frac{8 bytes}{servo} * \frac{8 bits}{byte}}
         {115.2 kbps} \label{transfertime}
 \end{align}
 The maximum update speed for the SSC-32 is 20ms, so that is the main performance
 limiter \cite{lynxmaxspeed}.  The 20ms limit should be fine for most motions,
-since 20ms is faster than most human knee motions
+since 20ms is faster than most human knee motions, which requires nearly one
+second to move from full extension to full contraction
 \cite{williamson2001detecting}. However, having a faster update rate will
-increase the resolution of the motion and achieve a more human like gait.The
+increase the resolution of the motion and achieve a more human like gait. The
 SSC-32 is controlled by a Atmel ATMEGA168-20PU, which is a 8-bit 20Mhz
-microcontroller \cite{Atmega168data}. To increase performance, we may be able
-to shift the servo control to the PIC32, which is a much faster microcontroller,
+microcontroller \cite{Atmega168data}. To increase performance, we may be able to
+shift the servo control to the PIC32, which is a much faster microcontroller,
 and we would not need the serial communications between the PIC32 and the
 SSC-32, but that would require more complicated task scheduling to synchronize
 the servo movements.
 
-\paragraph{}Currently, the motion of the legs is restricted due to lack of
-proper power supply to the robot. Currently we only have two power supplies, the
+\paragraph{}Currently, the robot's mobility is limited due to lack of
+proper power supply to the robot. We only have two power supplies, the
 Yihua 1502DD and the VLT100, neither of which is suitable for the task of
 powering the entire bipedal system. Currently the Yihua can support full control
 of a single joint with great reliability. The datasheet of the servos list the
@@ -574,12 +576,15 @@ stall current as 1.2A and the no load current as 200mA. Through testing we see
 that actuating a single knee servo to lift the leg requires over 1A of current.
 The Yihua has a maximum load of 2A, which cannot support motion of the robot.
 Testing with the VLT100 which is a 5V 3-12A power supply also proved useless.
-The power supply could no reliably lift the legs of the robot and hold their
-positions. The leg has 12 servos in total, most of large motions will be in the
-four hip and knee joints, while the other joints will be responsible for smaller
-motions to balance the robot. The arms are of similar construction, but the
-elbow and shoulder joints would be responsible for a even larger load of lifting
-the arms in air. 
+The power supply could not reliably lift the legs of the robot and hold their
+positions. This is likely due to the servos requiring 6V to 7.2V of supply
+voltage. The VLT100 needs 3A minimum load, to sustain a stable voltage output,
+and even with 12 servos they do not draw 3A when the majority are unloaded. The
+leg has 12 servos in total, most of large motions will be in the four hip and
+knee joints, while the other joints will be responsible for smaller motions to
+balance the robot.  The arms are of similar construction, but the elbow and
+shoulder joints would be responsible for a even larger load of lifting the arms
+in air. 
 
 \paragraph{}Ideally we want to be able to supply 28.8A of current to
 satisfy the maximum requirement of the servos. We can opt for a high current
@@ -590,7 +595,7 @@ will need to be tethered to the table supply. We can also boost the voltage out
 put of the VLT100, the 12A output is probably sufficient for the controlling the
 legs or the arms, so we may need two supplies for the whole robot. The VLT100 is
 small enough to attach to the robot, but it needs to be attached to tethered to
-the wall supply. We can also use batteries to power the robot. The BP13-6 S for
+the wall supply. We can also use batteries to power the robot. The BP13-6 S from
 BB Battery Co. has 6V output and a 30A maximum discharge, and the battery is
 rechargeable \cite{batterydata}. The battery has the advantage of being mobile
 and can remove the necessity of tethering the robot, though the battery is
