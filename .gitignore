@@ -15,3 +15,7 @@
 *.tex~
 *.lof
 *.toc
+*.png
+*.fzz
+*.odg
+*.xpm
