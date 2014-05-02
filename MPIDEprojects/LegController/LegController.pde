@@ -16,7 +16,7 @@
  * UART1TX = F8
  */
 static const int LED_PIN = 65; //LED2 red
-static const int TIME_STEP = 1000; //Time step in milliseconds
+static const int TIME_STEP = 100; //Time step in milliseconds
 static const int NUM_SERVOS = 12; //Servos numbered 0-31
 
 enum JointType { 
@@ -45,7 +45,7 @@ String sscFinalCommand = "";
 String terminalCommand = ""; //command from PC terminal
 
 int counter = 0;
-int operatingMode = 1; // 0 stop, 1 move, 2 manual servo control
+int operatingMode = 2; // 0 stop, 1 move, 2 manual servo control
 bool commandComplete = false;
 
 // Given a servo calculate output as ssc Positon Value
@@ -56,7 +56,7 @@ String sineFunctionA(int time);
 void setup() 
 {   
     //UART to SSC32
-    Serial0.begin(9600);   
+    Serial0.begin(38400);   
 
     //USB to PC for commands/debug
     Serial.begin(9600);
@@ -88,10 +88,14 @@ void loop()
     //Serial0.println("#1 P500 T1000"); //turns the servo to the initial position in 1 second
     //Serial0.println("#1 P2500 T1000"); //turns the servo to the final position in 1 second
 
+    // Check and parse commands, manual mode
+    readCommand();
+    parseCommand();
+
     if (operatingMode == 1) 
-    {
         walkingMode();
-    }
+    else if (operatingMode == 0) 
+        stopMode();
 }
 
 void readCommand()
@@ -112,17 +116,20 @@ void readCommand()
 void parseCommand()
 {
     if (commandComplete) {
-        if (terminalCommand == "walk")
+        Serial.print("Recieved: " + terminalCommand);
+        if (terminalCommand == "walk\n")
             operatingMode = 1;
-        else if (terminalCommand == "stop")
+        else if (terminalCommand == "stop\n")
             operatingMode = 0;
-        else if (terminalCommand == "manual")
+        else if (terminalCommand == "manual\n")
             operatingMode = 2;
         else {
             sendSSC32Command(terminalCommand);
         }
         terminalCommand = "";
         commandComplete = false;
+        Serial.print("Current mode: ");
+        Serial.println(operatingMode);
     }
 }
 
@@ -130,7 +137,6 @@ void sendSSC32Command(String command)
 {
     digitalWrite(LED_PIN, LOW);
 
-    Serial.println(command);
     Serial0.println(command);
 
     digitalWrite(LED_PIN, HIGH);  
@@ -138,8 +144,29 @@ void sendSSC32Command(String command)
 
 void walkingMode()
 {
+    int start = millis();
     for (int i = 0; i < NUM_SERVOS; i++) {
         sscOutputs[i] = calcServoOutput(i, counter);
+        sscSpeeds[i] = TIME_STEP;
+        sscCommands[i] = "#" + servoIDs[i] + " P" + sscOutputs[i];
+        sscFinalCommand += sscCommands[i] + " ";
+    }
+    int stop = millis() - start;
+
+    sscFinalCommand += "T" + String(TIME_STEP);
+    delay(TIME_STEP-4-stop-10);
+
+    sendSSC32Command(sscFinalCommand);
+    sscFinalCommand = "";
+
+    delay(4);
+    counter++;
+}
+
+void stopMode()
+{
+    for (int i = 0; i < NUM_SERVOS; i++) {
+        sscOutputs[i] = 1500;
         sscSpeeds[i] = TIME_STEP;
         sscCommands[i] = "#" + servoIDs[i] + " P" + sscOutputs[i];
         sscFinalCommand += sscCommands[i] + " ";
@@ -151,7 +178,6 @@ void walkingMode()
     sscFinalCommand = "";
 
     delay(TIME_STEP+100);
-    counter++;
 }
 
 String calcServoOutput(int servo, int time) {
