@@ -119,9 +119,9 @@ void parseCommand()
         Serial.print("Recieved: " + terminalCommand);
         if (terminalCommand == "walk\n")
             operatingMode = 1;
-        else if (terminalCommand == "stop\n")
+        else if (terminalCommand == "stand\n")
             operatingMode = 0;
-        else if (terminalCommand == "manual\n")
+        else if (terminalCommand == "direct\n")
             operatingMode = 2;
         else {
             sendSSC32Command(terminalCommand);

@@ -111,7 +111,10 @@ controlling the motions of the legs and arms.
 \paragraph{}The team completed the bipedal legs of the robot, and I was able to
 test the controller on the bipedal system. The control of walking was based on a
 linear combination of different sine waves which governed the periodic motion of
-the legs. The report describes the detailed design of the firmware and the
+the legs. Through system testing, we discovered that the robot has very high
+power requirements, and the power supplies we had could not power the entire
+system.  Much more powerful power supplies will be needed to complete full
+system tests.  The report describes the detailed design of the firmware and the
 robotic legs on which the firmware was tested, as well as the challenges we
 faced and our recommendations to the sponsor for moving forward with the
 project.
@@ -446,8 +449,11 @@ like gait on difficult to traverse terrains\cite{SiasJr1990}.
 thighs where made from aluminum cylinders, and the feet were aluminum plates
 (Figure \ref{protolegfig}). The SSC-32 servo controller was attached to the hip.
 A tether connects the servo controller to the power supply and the PIC32
-controller. Figure \ref{servosetupfig} shows the configuration of the servos on the leg, as
-well as their direction and range of motion in terms of SSC-32 position values.
+controller. Figure \ref{servosetupfig} shows the configuration of the servos on
+the leg, as well as their direction and range of motion in terms of SSC-32
+position values. The full range of valid position values was determined through
+testing each individual joint. I found that exceeding these values generally
+breaks the logic of the SSC32, and the controller must be reset as a result. 
 
 \begin{figure}
   \centering
@@ -478,7 +484,7 @@ other devices.
 contains functions and settings for controlling servo position through the
 SSC-32 controller. The MPU6050 is accessed through \verb!MPU6050.h! which
 defines memory addresses of the MPU6050 registers and functions for reading the
-output of the sensors and configuring the sensor settings. Future users of the
+output of the sensors and configuring the sensor settings. Users of the
 robot can adapt these settings to program and prototype their own control
 algorithms.
 
@@ -537,25 +543,40 @@ a single synchronized motion command to the SSC-32. The execution speed of the
 round robin loop is determined in the code. To get smooth motions in the joints,
 we needed to calibrate the timing of the commands sent to the SSC-32. 
 We are utilizing a 100ms time step for the position calculations, and we found
-that approximately 90ms update time is sufficient for smooth motions. To smooth
+that approximately 95ms update time is sufficient for smooth motions. To smooth
 out the motions, the update time needs to be shorter than the motion time
 programmed into the SSC-32.  We calculate the necessary position of the servos
 and construct the command and send the command to the SSC-32 in 90ms. 
 We have 12 servos, and each servo requires around 8 bytes of data to be sent.
-The PIC32 runs at 80Mhz, so it is sufficient for our current configuration
+The PIC32 runs at 80MHz, so it is sufficient for our current configuration, the
+calculation time negligible, we measured times in the range of a few
+milliseconds for the calculation of the sine functions of all the servos.
 \cite{pic32data}. The serial transfer rate can be limiting since the SSC-32
 requires a long string encoding the positions of all the servos that need to be
-moved, and each servo needs a string of 8 characters, with 12 servos on the legs
-and 12 servos on the arms that is 1536 bits of information that needs to sent
-every time step. However the SSC-32 has a maximum baud rate of 115.2kbps, so we
-cant send that information in approximately 13ms \cite{sscdata}. Equation
-\ref{transfertime} shows the bit rate calculations.
-\begin{align}
-    t_{serial} &= \frac{n_{servos} * \frac{8 bytes}{servo} * \frac{8 bits}{byte}}
-        {115.2 kbps} \label{transfertime}
-\end{align}
+moved, and each servo needs a string of approximately 8 characters, with 12
+servos on the legs and 12 servos on the arms that is 1536 bits of information
+that needs to sent every time step. The SSC32 can be configured for different
+Baud rates of 9600, 38400, and 115200. Table \ref{baudtable} shows the measured
+transfer times at each of the available Baud rates. These values were measured
+using commands for simultaneous control of 12 servos. 
+\begin{table} [!h]
+    \begin{tabular}{|r|l|}
+        \hline
+        Baud Rate (bps) & Transfer Time (ms)\\
+        \hline 
+        9600 & 115 \\ 
+        \hline 
+        38400 & 28 \\
+        \hline 
+        115200 & 10 \\
+        \hline
+    \end{tabular}
+    \caption{The number of milliseconds to transmit a command for 12 servos to
+    the SSC32 for different Baud rates}
+    \label{baudtable}
+\end{table}
 The maximum update speed for the SSC-32 is 20ms, so that is the main performance
-limiter \cite{lynxmaxspeed}.  The 20ms limit should be fine for most motions,
+limiter \cite{lynxmaxspeed}. The 20ms limit should be fine for most motions,
 since 20ms is faster than most human knee motions, which requires nearly one
 second to move from full extension to full contraction
 \cite{williamson2001detecting}. However, having a faster update rate will
@@ -578,7 +599,7 @@ The Yihua has a maximum load of 2A, which cannot support motion of the robot.
 Testing with the VLT100 which is a 5V 3-12A power supply also proved useless.
 The power supply could not reliably lift the legs of the robot and hold their
 positions. This is likely due to the servos requiring 6V to 7.2V of supply
-voltage. The VLT100 needs 3A minimum load, to sustain a stable voltage output,
+voltage. The VLT100 needs 3A minimum load to sustain a stable voltage output,
 and even with 12 servos they do not draw 3A when the majority are unloaded. The
 leg has 12 servos in total, most of large motions will be in the four hip and
 knee joints, while the other joints will be responsible for smaller motions to
@@ -604,7 +625,7 @@ tether, we will also need to replace the wired USB connection with wireless
 communication.
 
 \section{Conclusion}
-\paragraph{}Currently the robot has legs and arms that can be used as testing
+\paragraph{}The robot has legs and arms that can be used as testing
 platforms for various algorithms. Future groups can utilize this robotic
 platform as a foundation for developing more complex control systems and
 artificial intelligence software. The overall vision laid out by the our
