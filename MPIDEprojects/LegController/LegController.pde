@@ -88,22 +88,14 @@ void loop()
     //Serial0.println("#1 P500 T1000"); //turns the servo to the initial position in 1 second
     //Serial0.println("#1 P2500 T1000"); //turns the servo to the final position in 1 second
 
-    int start = millis();
     // Check and parse commands, manual mode
     readCommand();
     parseCommand();
-    int serialtime = millis() - start;
 
     if (operatingMode == 1) 
         walkingMode();
     else if (operatingMode == 0) 
         stopMode();
-    int stop = millis() - start;
-
-    Serial.print("Serial time : ");
-    Serial.println(serialtime);
-    Serial.print("Overall time : ");
-    Serial.println(stop);
 }
 
 void readCommand()
