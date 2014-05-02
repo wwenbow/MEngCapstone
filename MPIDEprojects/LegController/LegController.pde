@@ -88,14 +88,22 @@ void loop()
     //Serial0.println("#1 P500 T1000"); //turns the servo to the initial position in 1 second
     //Serial0.println("#1 P2500 T1000"); //turns the servo to the final position in 1 second
 
+    int start = millis();
     // Check and parse commands, manual mode
     readCommand();
     parseCommand();
+    int serialtime = millis() - start;
 
     if (operatingMode == 1) 
         walkingMode();
     else if (operatingMode == 0) 
         stopMode();
+    int stop = millis() - start;
+
+    Serial.print("Serial time : ");
+    Serial.println(serialtime);
+    Serial.print("Overall time : ");
+    Serial.println(stop);
 }
 
 void readCommand()
@@ -151,15 +159,14 @@ void walkingMode()
         sscCommands[i] = "#" + servoIDs[i] + " P" + sscOutputs[i];
         sscFinalCommand += sscCommands[i] + " ";
     }
+    sscFinalCommand += "T" + String(TIME_STEP);
     int stop = millis() - start;
 
-    sscFinalCommand += "T" + String(TIME_STEP);
-    delay(TIME_STEP-4-stop-10);
+    delay(TIME_STEP-6-stop-28);
 
     sendSSC32Command(sscFinalCommand);
     sscFinalCommand = "";
-
-    delay(4);
+    delay(6);
     counter++;
 }
 
