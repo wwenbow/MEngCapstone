@@ -101,7 +101,7 @@ servo controller, a powerful controller capable of synchronizing the motions of
 32 servos at the same time \cite{sscdata}. A single SSC-32, controlled through a
 serial UART connection, would be able to control the motions of the arm and legs
 and synchronize them with millisecond precision.  The sensory information
-currently consists of accelerometer and gyro readings from the MPU6050. The
+consists of accelerometer and gyro readings from the MPU6050. The
 MPU6050 is connected through an I2C connection, and it consists of a 3-axis gyro
 and a 3-axis accelerometer, as well as temperature sensors. The MPU6050 can also
 be connected to other sensors such as magnetometers \cite{mpu6050data}. The
@@ -422,12 +422,12 @@ and sent to the servo controller.
 
 \section{Discussion}
 \subsection{Overall System}
-\paragraph{}Currently we have components of a robotic platform prototyped and
+\paragraph{}We have components of a robotic platform prototyped and
 designed. The Robotic legs and arm are prototyped and constructed. The hand and
 feet have been designed in CAD, and The basic software and control framework has
 been established. The basic I/O and control tasks have been implemented in C++
 on the microcontroller with easy to use APIs that others can use to control the
-currently completed robot legs. Overall we are at a good position for the
+completed robot legs. Overall we are at a good position for the
 sponsor to take the foundations we have built and try to implement different
 control algorithms and machine learning algorithms. 
 
@@ -466,7 +466,7 @@ well as their direction and range of motion in terms of SSC-32 position values.
 \end{figure}
 
 \subsection{Firmware}
-\paragraph{}The currently completed firmware components are the serial
+\paragraph{}The completed firmware components are the serial
 communications to different devices, servo control, and accelerometer/gyro
 control.  The communications channels implemented are the USB communications
 between the PIC32 and the PC, the UART connection between the PIC32 and the
@@ -518,7 +518,7 @@ c83L =  -0.402;
 \paragraph{}The robot is controlled through a serial connection to the computer.
 The PIC32MX795F512L is connected to the PC through the USB connection on UART
 channel 0. Commands can be passed into the robot from a serial terminal on the
-PC. Currently there are three modes of operation: Standing, Walking, and Direct
+PC. There are three modes of operation: Standing, Walking, and Direct
 Control. Activated by sending the strings \verb!stand!, \verb!walk!, and
 \verb!direct! through a serial terminal to the PIC32. While in stand mode, the
 robot holds a rigid upright position. While in walk mode, the robot attempts to
@@ -535,13 +535,13 @@ calculating servo outputs. It looks at each servo in order and calculates the
 correct output. The final command is composed from the servo outputs and sent as
 a single synchronized motion command to the SSC-32. The execution speed of the
 round robin loop is determined in the code. To get smooth motions in the joints,
-we needed to calibrate the timing of the commands sent to the SSC-32. Currently
-we are utilizing a 100ms time step for the position calculations, and we found
+we needed to calibrate the timing of the commands sent to the SSC-32. 
+We are utilizing a 100ms time step for the position calculations, and we found
 that approximately 90ms update time is sufficient for smooth motions. To smooth
 out the motions, the update time needs to be shorter than the motion time
 programmed into the SSC-32.  We calculate the necessary position of the servos
-and construct the command and send the command to the SSC-32 in 90ms. Currently
-we have 12 servos, and each servo requires around 8 bytes of data to be sent.
+and construct the command and send the command to the SSC-32 in 90ms. 
+We have 12 servos, and each servo requires around 8 bytes of data to be sent.
 The PIC32 runs at 80Mhz, so it is sufficient for our current configuration
 \cite{pic32data}. The serial transfer rate can be limiting since the SSC-32
 requires a long string encoding the positions of all the servos that need to be
@@ -567,10 +567,10 @@ and we would not need the serial communications between the PIC32 and the
 SSC-32, but that would require more complicated task scheduling to synchronize
 the servo movements.
 
-\paragraph{}Currently, the robot's mobility is limited due to lack of
+\paragraph{}The robot's mobility is limited due to lack of
 proper power supply to the robot. We only have two power supplies, the
 Yihua 1502DD and the VLT100, neither of which is suitable for the task of
-powering the entire bipedal system. Currently the Yihua can support full control
+powering the entire bipedal system. The Yihua can support full control
 of a single joint with great reliability. The datasheet of the servos list the
 stall current as 1.2A and the no load current as 200mA. Through testing we see
 that actuating a single knee servo to lift the leg requires over 1A of current.

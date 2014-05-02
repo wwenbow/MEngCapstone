@@ -16,7 +16,7 @@
  * UART1TX = F8
  */
 static const int LED_PIN = 65; //LED2 red
-static const int TIME_STEP = 100; //Time step in milliseconds
+static const int TIME_STEP = 106; //Time step in milliseconds
 static const int NUM_SERVOS = 12; //Servos numbered 0-31
 
 enum JointType { 
@@ -154,7 +154,7 @@ void walkingMode()
     sscFinalCommand += "T" + String(TIME_STEP);
     int stop = millis() - start;
 
-    delay(TIME_STEP-6-stop-28);
+    delay(TIME_STEP-12-stop-28);
 
     sendSSC32Command(sscFinalCommand);
     sscFinalCommand = "";
