@@ -174,7 +174,7 @@ Networks\cite{Barbu2012},\cite{krizhevsky2012imagenet}. Many of the object
 detection algorithms utilize Histogram of Oriented Gradient(HOG) features, which
 are based on taking a gradient over the image and generating histograms of
 gradient angles and magnitudes using overlapping sections of the
-image\cite{Dalal2005}. 
+image\cite{Dalal2005}.
 
 \paragraph{}Complex object detection algorithms can be very resource intensive,
 as they often need to scan the image multiple times at different resolutions to
@@ -201,7 +201,7 @@ power hungry, so it is not very suitable for most
 applications\cite{Melchiorri2013}. However, most light weight hands are lacking
 in complexity and function. The this recently developed lightweight hand only
 has five degrees of freedom\cite{takaki2011high}. To develop a hand that is both
-light weight, small, and fully functional will require new design techniques. 
+light weight, small, and fully functional will require new design techniques.
 
 \subsection{Shape Memory Alloy}
 \paragraph{}We want to leverage some modern technology to make a robotic hand
@@ -220,7 +220,7 @@ Generators (CPG). Central pattern generators are neural networks that generate
 periodic control signals in the body. This control can be generated in the
 absence of feedback signals. The human body utilizes this
 system for many different rhythmic motor functions that the body needs to
-perform\cite{cpggeneral}. 
+perform\cite{cpggeneral}.
 
 \paragraph{}Central pattern generator can also be adapted to the locomotion of
 robots. CPG can be used to control locomotion of bipedal robots, as well as
@@ -327,7 +327,7 @@ simultaneously\cite{servodata}.
 \end{figure}
 
 \paragraph{Yihua 1502DD}Adjustable power supply for servos. See figure
-\ref{yihuafig}. 0-15V output and 0-2A output\cite{yihuadata}. 
+\ref{yihuafig}. 0-15V output and 0-2A output\cite{yihuadata}.
 
 \begin{figure}
   \centering
@@ -421,7 +421,48 @@ The positions of the legs are calculated by the PIC32 and sent to the SSC-32
 through the Universal Asynchronous Receiver Transmitter(UART) module of the
 PIC32. The UART is a serial connection between the PIC32 and the SSC-32. The
 calculated results are composed into a string in the form of an SSC-32 command
-and sent to the servo controller. 
+and sent to the servo controller.
+
+\subsubsection{Testing}
+\paragraph{} Tests were done on the control system and servos to make use every
+system function correctly. Software performance was testing using the hardware
+timers on the PIC32. The performance of individual processes were timed to
+identify performance bottlenecks and possibilities for optimization. The main
+processes we timed were the calculation of the sine waves for robot walking and
+serial transmission between devices. We also measured overall runtime for each
+controller iteration to make sure physical motion of the robot was synchronized
+with the controller update time.
+
+\paragraph{} Servos were also tested for performance. While testing the basic
+servo functionality of the controller, I used a small battery to power the
+servo, as their was little load to lift. Initially I tested to check that the
+P500, P1500, and P2500 settings of the SSC32 matched the 0, 90, and 180 degrees
+of the physical servo. Initial servo testing was done by sending manual commands
+to the SSC32 controller through a serial terminal.
+
+\paragraph{} After the legs were assembled, I tested the servos on
+the legs joints. These tests were performed using the Yihua 1502 power supply
+which could support the load of lifting the legs. For these tests I also sent
+direct commands through a serial terminal to control the positions of the
+individual joints. I tested the maximum and minimum angles of each joint servo.
+This was done by iteratively trying the different possible joint angles until
+we found the all positions that would not be constrained by the mechanics of the
+joint assembly. Once I found a position value that the servo could not move to
+due to mechanical constraints, we tested narrowed the search to find the maximum
+allowable position. We also tested to find all the neutral positions of the servo,
+where neutral meant standing upright. These maximum and minimum position values,
+would be coded into the controller as software limits, as trying to push the
+servo against these limits wold likely overload and damage the servo.
+
+\paragraph{} Overall system testing was done by attaching all joint servos to
+the SSC32 and driving them with the VLT100 which could supply up to 20A of
+current. Initial testing was done using serial terminal was manual control.
+First we test the ability to synchronize the motions of multiple servos at once
+using the serial terminal to send synchronized commands. Then we switched to the
+autonomous mode and tested the controller's ability to correctly generate
+periodic motions in the legs. To make sure the PIC32 was outputting the correct
+commands to the SSC32, we had the PIC32 mirror those commands to the PC, where
+we can check the output position and command syntax through a serial terminal.
 
 \section{Discussion}
 \subsection{Overall System}
@@ -432,7 +473,7 @@ been established. The basic I/O and control tasks have been implemented in C++
 on the microcontroller with easy to use APIs that others can use to control the
 completed robot legs. Overall we are at a good position for the
 sponsor to take the foundations we have built and try to implement different
-control algorithms and machine learning algorithms. 
+control algorithms and machine learning algorithms.
 
 \subsection{Robot Leg}
 \paragraph{}The leg was constructed using with six servos on each leg. Three
@@ -441,7 +482,7 @@ joint, which has three degrees of freedom\cite{SiasJr1990}. The three modes of
 motion are along the sagittal, frontal, and transverse planes\cite{Fiscell2005}.
 The knee has one degree of freedom, and the ankle has two degrees of freedom in
 the sagittal and frontal planes. Each leg has six degrees of freedom in total,
-this is fine for most gaits on uneven ground, but more complex terrain may be 
+this is fine for most gaits on uneven ground, but more complex terrain may be
 difficult to manage; More degrees of freedom may be needed to obtain more human
 like gait on difficult to traverse terrains\cite{SiasJr1990}.
 
@@ -453,7 +494,7 @@ controller. Figure \ref{servosetupfig} shows the configuration of the servos on
 the leg, as well as their direction and range of motion in terms of SSC-32
 position values. The full range of valid position values was determined through
 testing each individual joint. I found that exceeding these values generally
-breaks the logic of the SSC32, and the controller must be reset as a result. 
+breaks the logic of the SSC32, and the controller must be reset as a result.
 
 \begin{figure}
   \centering
@@ -478,7 +519,7 @@ control.  The communications channels implemented are the USB communications
 between the PIC32 and the PC, the UART connection between the PIC32 and the
 SSC-32 servo controller, and the I2C connection to the MPU6050 sensors. The I2C
 connection can be adapted to more sensors that may be added in the future for
-other devices. 
+other devices.
 
 \paragraph{}The servo controls are accessed through \verb!SSCServo.h! which
 contains functions and settings for controlling servo position through the
@@ -533,7 +574,16 @@ walk according to the sine waves laid out by equations \ref{phi3} to
 the SSC-32 commands; in this mode all the commands passed to the PIC32 are
 redirected to the SSC-32. Servos on the right leg are attached to channels 0-5
 on the SSC-32 and the servos on the left leg are on channels 16-21. Figure
-\ref{servosetupfig} shows the corresponding channels for each servo.
+\ref{servosetupfig} shows the corresponding channels for each servo. Figure
+\ref{circuit} shows an overview of how the circuit components are connected in
+the legs.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=1.0\textwidth]{figures/circuitoverview.png}
+    \caption{Overview of the circuit components and the connection}
+    \label{circuit}
+\end{figure}
 
 \subsection{System Analysis}
 \paragraph{}The controller performs simple round robin scheduling when
@@ -541,16 +591,16 @@ calculating servo outputs. It looks at each servo in order and calculates the
 correct output. The final command is composed from the servo outputs and sent as
 a single synchronized motion command to the SSC-32. The execution speed of the
 round robin loop is determined in the code. To get smooth motions in the joints,
-we needed to calibrate the timing of the commands sent to the SSC-32. 
+we needed to calibrate the timing of the commands sent to the SSC-32.
 We are utilizing a 100ms time step for the position calculations, and we found
-that approximately 95ms update time is sufficient for smooth motions. To smooth
+that approximately 94ms update time is sufficient for smooth motions. To smooth
 out the motions, the update time needs to be shorter than the motion time
 programmed into the SSC-32.  We calculate the necessary position of the servos
-and construct the command and send the command to the SSC-32 in 90ms. 
+and construct the command and send the command to the SSC-32 in 94ms.
 We have 12 servos, and each servo requires around 8 bytes of data to be sent.
 The PIC32 runs at 80MHz, so it is sufficient for our current configuration, the
 calculation time negligible, we measured times in the range of a few
-milliseconds for the calculation of the sine functions of all the servos.
+milliseconds for the calculation of the sine functions of all the servos
 \cite{pic32data}. The serial transfer rate can be limiting since the SSC-32
 requires a long string encoding the positions of all the servos that need to be
 moved, and each servo needs a string of approximately 8 characters, with 12
@@ -558,16 +608,18 @@ servos on the legs and 12 servos on the arms that is 1536 bits of information
 that needs to sent every time step. The SSC32 can be configured for different
 Baud rates of 9600, 38400, and 115200. Table \ref{baudtable} shows the measured
 transfer times at each of the available Baud rates. These values were measured
-using commands for simultaneous control of 12 servos. 
+using commands for simultaneous control of 12 servos.
+
 \begin{table} [!h]
+    \centering
     \begin{tabular}{|r|l|}
         \hline
         Baud Rate (bps) & Transfer Time (ms)\\
-        \hline 
-        9600 & 115 \\ 
-        \hline 
+        \hline
+        9600 & 115 \\
+        \hline
         38400 & 28 \\
-        \hline 
+        \hline
         115200 & 10 \\
         \hline
     \end{tabular}
@@ -575,7 +627,20 @@ using commands for simultaneous control of 12 servos.
     the SSC32 for different Baud rates}
     \label{baudtable}
 \end{table}
-The maximum update speed for the SSC-32 is 20ms, so that is the main performance
+
+Figure \ref{timing} shows the final configuration of the firmware timing. We
+used 38.4kbps for the Baud rate in our prototype. The majority of the time is
+spent waiting, this time may be filled up with other tasks as the other
+components of the robot are completed.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=1.0\textwidth]{figures/Timing.png}
+    \caption{Timing of the processor steps with the motions of the servo}
+    \label{timing}
+\end{figure}
+
+\paragraph{}The maximum update speed for the SSC-32 is 20ms, so that is the main performance
 limiter \cite{lynxmaxspeed}. The 20ms limit should be fine for most motions,
 since 20ms is faster than most human knee motions, which requires nearly one
 second to move from full extension to full contraction
@@ -605,7 +670,7 @@ leg has 12 servos in total, most of large motions will be in the four hip and
 knee joints, while the other joints will be responsible for smaller motions to
 balance the robot.  The arms are of similar construction, but the elbow and
 shoulder joints would be responsible for a even larger load of lifting the arms
-in air. 
+in air.
 
 \paragraph{}Ideally we want to be able to supply 28.8A of current to
 satisfy the maximum requirement of the servos. We can opt for a high current
